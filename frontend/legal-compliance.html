@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoHan RWA | 法律合规框架 · Legal Compliance · الامتثال القانوني</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== 全局变量 ========== */
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+        /* 语言可见性 */
+        body[data-lang="zh"] .lang-zh { display: block; }
+        body[data-lang="zh"] .lang-en, body[data-lang="zh"] .lang-ar { display: none; }
+        body[data-lang="en"] .lang-en { display: block; }
+        body[data-lang="en"] .lang-zh, body[data-lang="en"] .lang-ar { display: none; }
+        body[data-lang="ar"] .lang-ar { display: block; }
+        body[data-lang="ar"] .lang-zh, body[data-lang="ar"] .lang-en { display: none; }
+        body[data-lang="ar"] { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body[data-lang="ar"] .container { text-align: right; }
+        body[data-lang="ar"] .header-inner, body[data-lang="ar"] .footer-links { justify-content: space-between; flex-direction: row-reverse; }
+        body[data-lang="ar"] .back-btn i { margin-left: 8px; margin-right: 0; transform: rotate(180deg); }
+
+        /* 头部样式（统一按钮） */
+        header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.92); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        body.dark .logo { color: #ffffff; }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .back-btn:hover { color: var(--primary-blue); }
+
+        /* 统一按钮样式（主题切换 + 语言触发器） */
+        .theme-toggle, .lang-selector .lang-trigger {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        body.dark .theme-toggle, body.dark .lang-selector .lang-trigger {
+            background: #2d3a4f;
+            border-color: #7e8c9e;
+            color: #f0f4fa;
+        }
+        .theme-toggle:hover, .lang-selector .lang-trigger:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* 语言下拉菜单 */
+        .lang-selector {
+            position: relative;
+            display: inline-block;
+        }
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+            min-width: 130px;
+            padding: 8px 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 200;
+            border: 1px solid var(--border-color);
+            margin-top: 8px;
+        }
+        body[data-lang="ar"] .lang-dropdown { right: auto; left: 0; }
+        .lang-selector:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+        }
+        .lang-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 20px;
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .lang-dropdown button:hover {
+            background: #f1f5f9;
+            color: var(--primary-blue);
+        }
+        body.dark .lang-dropdown button:hover {
+            background: #334155;
+        }
+
+        /* 主体卡片 */
+        main { padding: 60px 0; }
+        .legal-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 40px 48px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        h1 { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; letter-spacing: -0.5px; }
+        .last-updated { color: var(--text-light); font-size: 0.9rem; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); margin: 32px 0 16px; }
+        h3 { font-size: 1.2rem; font-weight: 600; margin: 24px 0 12px; color: var(--primary-dark); }
+        p, li { margin-bottom: 0.8rem; }
+        ul, ol { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+        body[data-lang="ar"] ul, body[data-lang="ar"] ol { padding-right: 1.5rem; padding-left: 0; }
+        .compliance-warning { background: #fffaf0; border-left: 4px solid #ed8936; padding: 16px 24px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+        body.dark .compliance-warning { background: rgba(237,137,54,0.1); }
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        body.dark h1, body.dark h2, body.dark h3, body.dark .last-updated, body.dark .compliance-warning strong { color: #ffffff; }
+        @media (max-width: 768px) {
+            .legal-card { padding: 28px 24px; }
+            h1 { font-size: 1.8rem; }
+        }
+        @media (max-width: 640px) {
+            .legal-card { padding: 20px 16px; }
+            h1 { font-size: 1.6rem; }
+            .header-inner { flex-direction: column; text-align: center; }
+            .lang-dropdown { right: 0; left: auto; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang') || 'zh';
+        document.body.setAttribute('data-lang', lang);
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function setLanguage(lang) {
+        document.body.setAttribute('data-lang', lang);
+        localStorage.setItem('mohan_lang', lang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回主页</span><span class="lang-en">Back to Home</span><span class="lang-ar">العودة إلى الرئيسية</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span><span class="lang-ar">داكن</span></button>
+            <div class="lang-selector">
+                <button class="lang-trigger"><i class="fas fa-globe"></i> <span class="lang-zh">语言</span><span class="lang-en">Lang</span><span class="lang-ar">اللغة</span></button>
+                <div class="lang-dropdown">
+                    <button onclick="setLanguage('zh')">中文</button>
+                    <button onclick="setLanguage('en')">English</button>
+                    <button onclick="setLanguage('ar')">العربية</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="legal-card">
+            <h1>
+                <span class="lang-zh">法律合规框架 · 迪拜 VARA</span>
+                <span class="lang-en">Legal Compliance Framework · Dubai VARA</span>
+                <span class="lang-ar">إطار الامتثال القانوني · هيئة دبي VARA</span>
+            </h1>
+            <div class="last-updated">
+                <span class="lang-zh">最后更新：2026年6月 | 版本 v2.3 (迪拜本地化)</span>
+                <span class="lang-en">Last Updated: June 2026 | Version 2.3 (Dubai Localized)</span>
+                <span class="lang-ar">آخر تحديث: يونيو 2026 | الإصدار 2.3 (تم توطين دبي)</span>
+            </div>
+
+            <!-- 中文内容（全部改为迪拜/DIFC） -->
+            <div class="lang-zh">
+                <h2>① 监管主体与合规路径</h2>
+                <p>MoHan RWA 平台严格遵守迪拜虚拟资产监管局（VARA）颁布的虚拟资产活动法规，并按照 <strong>资产参照虚拟资产（ARVA）</strong> 类别进行合规架构设计。平台注册于 DMCC 自由区，采用「NOC → DLT 技术服务 → VARA 完整牌照 → RWA 平台」的四步合规路线。</p>
+                <ul>
+                    <li><strong>无异议函（NOC）：</strong> 在未取得完整 VASP 牌照前，通过申请 NOC 合法提供 DLT 技术咨询与开发服务，积累运营记录。</li>
+                    <li><strong>VASP 完整牌照：</strong> 完成五部分法律意见书、初始披露问卷（IDQ）、反洗钱手册等材料后申请，获批后开放 RWA 资产发行和二级市场交易。</li>
+                    <li><strong>ARVA 定义：</strong> 代币代表对底层现实世界资产的收益权或所有权，非证券、非稳定币，受 VARA 专门规则监管。</li>
+                </ul>
+                <div class="compliance-warning"><strong>VARA 合规提示 2026</strong><br>VARA 已向超过 85 家实体发放许可证，ARVA 规则为 RWA 项目提供了全球最清晰的合规路径。平台将定期向 VARA 提交交易、持仓和风险报告，确保完全透明。</div>
+
+                <h2>② 投资者资格与适当性</h2>
+                <h3>合格投资者认证</h3>
+                <ul>
+                    <li><strong>美国投资者：</strong> 依据 Reg D Rule 506(c)，需满足年收入≥20 万美元或净资产≥100 万美元（不含主要住所）。</li>
+                    <li><strong>非美国投资者：</strong> 依据 Reg S Category 2，确认不在美国境内进行要约或销售，遵守 12 个月分销合规期。</li>
+                    <li><strong>所有投资者：</strong> 必须完成平台 KYC/AML 流程（姓名、证件、地址证明、资金来源说明），并每年更新一次。</li>
+                </ul>
+                <h3>风险披露确认</h3>
+                <p>每个代币化产品均需投资者签署<strong>定制化、按重要性排序的风险披露声明</strong>，不得使用通用模板。投资者在首次认购前必须阅读并电子签署，平台记录签名时间、IP 地址和披露版本。</p>
+                <h3>锁定期与转让限制</h3>
+                <p>代币发行后设有 <strong>12 个月锁定期</strong>。锁定期满后，仅限在白名单认证的合格投资者之间通过协议方式转让，智能合约强制白名单校验。</p>
+
+                <h2>③ 资产结构：DIFC SPV 破产隔离</h2>
+                <p>每个代币化资产通过 <strong>迪拜国际金融中心（DIFC）三层特殊目的载体（SPV）</strong> 持有，实现资产破产远程隔离。具体结构：</p>
+                <ul>
+                    <li><strong>Layer 1 (管理公司):</strong> MoHan RWA Ltd（DMCC 自由区，迪拜），负责平台运营和代币发行管理。</li>
+                    <li><strong>Layer 2 (资产 SPV):</strong> 针对每个具体资产设立的独立 SPV（注册于 DIFC），唯一持有底层资产法律所有权，维持完全独立的账簿和银行账户。</li>
+                    <li><strong>Layer 3 (代币持有人权利):</strong> 代币代表对 SPV 收益的合法权益（非股权、非债务），符合 VARA ARVA 定义。</li>
+                </ul>
+                <div class="compliance-warning"><strong>破产远程保障</strong><br>SPV 包含目的限制条款、非合并契约及独立受托人否决权。架构依据 DIFC 破产法及《DIFC 有限责任公司条例》设计，但破产远程效力取决于持续合规运营。投资者应知悉：若 SPV 未维持独立账簿，法院仍可能裁定实质合并。</div>
+
+                <h2>④ 法律意见书与文件要求</h2>
+                <p>根据 VARA 2026 年 4 月最新指引，每个 ARVA 项目必须由具备资质的法律顾问出具 <strong>强制性五部分法律意见书</strong>：</p>
+                <ol>
+                    <li>ARVA 代币的证券法地位分析（非证券定性）</li>
+                    <li>底层资产的合法所有权与权属无瑕疵确认</li>
+                    <li>SPV 架构的破产隔离有效性评估</li>
+                    <li>代币发行、分销及二级市场交易的监管合规性</li>
+                    <li>反洗钱（AML）及反恐融资（CFT）框架合规</li>
+                </ol>
+                <p>所有法律意见书须由迪拜本地认可的国际律所出具，并随同 IDQ（初始披露问卷）、商业计划书、白皮书、AML 手册等材料一并提交 VARA。</p>
+
+                <h2>⑤ 持续信息披露与报告</h2>
+                <p>平台承诺向投资者和监管机构提供最高透明度：</p>
+                <ul>
+                    <li><strong>资产运营报告：</strong> 每季度发布经阿联酋注册会计师审计的储备证明及运营报告。</li>
+                    <li><strong>重大变更通知：</strong> 通过智能合约在 48 小时内通知全体代币持有人，并向 VARA 备案。</li>
+                    <li><strong>实时链上披露：</strong> 所有代币铸造、销毁、转让及分红记录均可通过 XRPL 浏览器公开查询。</li>
+                    <li><strong>年度审计：</strong> 由 DFSA 认可的会计师事务所执行 SPV 层面审计，报告于财年结束后 90 日内披露。</li>
+                </ul>
+
+                <h2>⑥ 投资者保护与风险缓冲</h2>
+                <p><strong>风险准备金机制：</strong> 发行方须将募资总额 5%-8% 存入迪拜认可的隔离托管账户作为风险缓冲，极端情况下由独立受托人启动补偿程序。</p>
+                <p><strong>争议解决：</strong> 因本平台或代币引起的任何争议，应提交 <strong>迪拜国际金融中心（DIFC）法院</strong> 排他性管辖。双方放弃陪审团审判及集体诉讼权利，诉讼语言为英语。实体法适用 <strong>阿联酋联邦法律及 DIFC 法律</strong>。</p>
+                <p><strong>退出机制：</strong> 投资者可通过定期赎回（锁定期满后按季度申请，按届时 NAV 赎回）、协议转让（合格投资者间私下转让）或强制清算（经 66% 代币持有人表决）退出。</p>
+                <div class="compliance-warning"><strong>重要免责声明</strong><br>本页面信息不构成法律建议。任何投资决策均需咨询持牌法律及财务顾问。平台不保证任何固定收益，代币价值可能跌至零。</div>
+            </div>
+
+            <!-- 英文内容（同步修改为 Dubai/DIFC） -->
+            <div class="lang-en">
+                <h2>① Regulatory Authority & Compliance Path</h2>
+                <p>MoHan RWA Platform strictly complies with the Virtual Assets Activity Regulations issued by the Dubai Virtual Assets Regulatory Authority (VARA) and structures its operations under the <strong>Asset-Referenced Virtual Asset (ARVA)</strong> category. The platform is registered in the DMCC free zone and follows a four-step compliance roadmap: NOC → DLT Technical Services → Full VARA License → RWA Platform.</p>
+                <ul>
+                    <li><strong>No-Objection Certificate (NOC):</strong> Legally provide DLT technical consulting and development services before obtaining a full VASP license.</li>
+                    <li><strong>Full VASP License:</strong> After submitting the 5-part legal opinion, IDQ, AML manual, etc.</li>
+                    <li><strong>ARVA Definition:</strong> Tokens represent revenue or ownership rights in underlying real-world assets, not securities or stablecoins.</li>
+                </ul>
+                <div class="compliance-warning"><strong>VARA Compliance Note 2026</strong><br>VARA has issued licenses to over 85 entities. The platform will submit regular transaction, holding, and risk reports to VARA.</div>
+
+                <h2>② Investor Eligibility & Suitability</h2>
+                <h3>Accredited Investor Certification</h3>
+                <ul>
+                    <li><strong>U.S. Investors:</strong> Reg D Rule 506(c): annual income ≥$200k or net worth ≥$1M (excluding primary residence).</li>
+                    <li><strong>Non-U.S. Investors:</strong> Reg S Category 2, 12-month distribution compliance period.</li>
+                    <li><strong>All Investors:</strong> Must complete KYC/AML and refresh annually.</li>
+                </ul>
+                <h3>Risk Disclosure Acknowledgment</h3>
+                <p>Customized, prioritized risk disclosure statement required for each tokenized product. Investors must sign electronically before first subscription; platform records timestamp, IP, and version.</p>
+                <h3>Lock-up & Transfer Restrictions</h3>
+                <p>12-month lock-up period. After lock-up, transfers only among whitelisted accredited investors via private agreement, with smart contract whitelist enforcement.</p>
+
+                <h2>③ Asset Structure: DIFC SPV Bankruptcy Remoteness</h2>
+                <p>Each tokenized asset is held through a <strong>Dubai International Financial Centre (DIFC) three-tier SPV</strong> structure:</p>
+                <ul>
+                    <li><strong>Layer 1 (Management Co.):</strong> MoHan RWA Ltd (DMCC Free Zone, Dubai)</li>
+                    <li><strong>Layer 2 (Asset SPV):</strong> Independent SPV registered in DIFC, holding legal title to the underlying asset with fully separate books and bank accounts.</li>
+                    <li><strong>Layer 3 (Token Holder Rights):</strong> Legal rights to SPV revenues (not equity/debt), consistent with VARA ARVA.</li>
+                </ul>
+                <div class="compliance-warning"><strong>Bankruptcy Remoteness Safeguards</strong><br>The SPV includes purpose clauses, non-consolidation covenants, and independent director veto rights. The structure is designed under DIFC Insolvency Law and DIFC LLC Regulations. Effectiveness depends on ongoing compliance; failure to maintain separate books may lead to substantive consolidation.</div>
+
+                <h2>④ Legal Opinions & Required Documents</h2>
+                <p><strong>Mandatory 5-part legal opinion</strong> from qualified counsel:</p>
+                <ol>
+                    <li>Securities law status (non-security analysis)</li>
+                    <li>Legal ownership and unencumbered title of underlying assets</li>
+                    <li>SPV bankruptcy remoteness effectiveness</li>
+                    <li>Regulatory compliance of issuance, distribution, secondary trading</li>
+                    <li>AML/CFT framework compliance</li>
+                </ol>
+                <p>All legal opinions must be issued by a Dubai-recognized international law firm and submitted with IDQ, business plan, whitepaper, and AML manual.</p>
+
+                <h2>⑤ Ongoing Disclosure & Reporting</h2>
+                <ul>
+                    <li><strong>Asset Operating Reports:</strong> Quarterly publication of audited reserve proof by a UAE-certified accountant.</li>
+                    <li><strong>Material Event Notices:</strong> Within 48 hours via smart contract and filed with VARA.</li>
+                    <li><strong>On-chain Real-time Disclosure:</strong> All minting, burning, transfers, dividends queryable on XRPL explorer.</li>
+                    <li><strong>Annual Audit:</strong> Conducted by a DFSA-recognized audit firm, disclosed within 90 days after fiscal year-end.</li>
+                </ul>
+
+                <h2>⑥ Investor Protection & Risk Buffer</h2>
+                <p><strong>Risk Reserve Mechanism:</strong> Issuers deposit 5%-8% of fundraising into a Dubai-approved segregated custody account; an independent trustee may initiate compensation in extreme cases.</p>
+                <p><strong>Dispute Resolution:</strong> Exclusive jurisdiction of the <strong>Dubai International Financial Centre (DIFC) Courts</strong>. Waiver of jury trial and class action. Governing law: <strong>UAE federal laws and DIFC laws</strong>. Language of proceedings: English.</p>
+                <p><strong>Exit Pathways:</strong> Periodic redemption (post-lockup quarterly at NAV), private transfer among accredited investors, mandatory liquidation (upon ≥66% token holder vote).</p>
+                <div class="compliance-warning"><strong>Important Disclaimer</strong><br>This page does not constitute legal advice. Consult licensed legal and financial advisors before any investment decision. Platform does not guarantee any fixed returns; token value may fall to zero.</div>
+            </div>
+
+            <!-- 阿拉伯语内容（同步修改为迪拜/DIFC，与英文逻辑一致） -->
+            <div class="lang-ar">
+                <h2>① الهيئة التنظيمية ومسار الامتثال</h2>
+                <p>تلتزم منصة MoHan RWA بشكل صارم بلوائح أنشطة الأصول الافتراضية الصادرة عن هيئة دبي للأصول الافتراضية (VARA) وتصمم عملياتها وفقًا لفئة <strong>الأصل الافتراضي المرجعي (ARVA)</strong>. تم تسجيل المنصة في منطقة DMCC الحرة وتتبع خريطة امتثال من أربع خطوات: NOC ← خدمات DLT ← ترخيص VARA الكامل ← منصة RWA.</p>
+                <ul>
+                    <li><strong>خطاب عدم الممانعة (NOC):</strong> تقديم خدمات استشارية وتطوير تقنيات دفاتر الحسابات الموزعة بشكل قانوني قبل الحصول على ترخيص VASP كامل.</li>
+                    <li><strong>ترخيص VASP الكامل:</strong> بعد تقديم الرأي القانوني المكون من خمسة أجزاء، واستبيان الإفصاح الأولي (IDQ)، ودليل مكافحة غسل الأموال.</li>
+                    <li><strong>تعريف ARVA:</strong> الرموز تمثل حقوق الإيرادات أو الملكية في الأصول الواقعية الأساسية، وليست أوراقًا مالية أو عملات مستقرة، وتخضع لقواعد VARA الخاصة.</li>
+                </ul>
+                <div class="compliance-warning"><strong>ملاحظة امتثال VARA 2026</strong><br>أصدرت VARA تراخيص لأكثر من 85 كيانًا. ستقدم المنصة تقارير منتظمة عن المعاملات والمقتنيات والمخاطر إلى VARA لضمان الشفافية الكاملة.</div>
+
+                <h2>② أهلية المستثمر وملاءمته</h2>
+                <h3>اعتماد المستثمر المعتمد</h3>
+                <ul>
+                    <li><strong>المستثمرون الأمريكيون:</strong> بموجب Reg D Rule 506(c)، الدخل السنوي ≥200 ألف دولار أو صافي الثروة ≥1 مليون دولار (باستثناء المسكن الأساسي).</li>
+                    <li><strong>المستثمرون غير الأمريكيين:</strong> بموجب Reg S Category 2، فترة امتثال توزيع 12 شهرًا.</li>
+                    <li><strong>جميع المستثمرين:</strong> يجب إكمال عملية KYC/AML وتحديثها سنويًا.</li>
+                </ul>
+                <h3>الإقرار بالإفصاح عن المخاطر</h3>
+                <p>يُطلب لكل منتج مرمز <strong>بيان إفصاح عن المخاطر مخصص ومرتب حسب الأهمية</strong>. يجب على المستثمرين قراءته والتوقيع إلكترونيًا قبل الاشتراك الأول، وتسجل المنصة الطابع الزمني وعنوان IP وإصدار الإفصاح.</p>
+                <h3>فترة القيود وقيود النقل</h3>
+                <p>توجد <strong>فترة قيد مدتها 12 شهرًا</strong> بعد إصدار الرمز. بعد انتهاء القيد، يسمح بالنقل فقط بين المستثمرين المعتمدين المدرجين في القائمة البيضاء عبر اتفاق خاص، مع تطبيق إلزامي للقائمة البيضاء في العقد الذكي.</p>
+
+                <h2>③ هيكل الأصول: العزل عن الإفلاس عبر SPV في DIFC</h2>
+                <p>يتم الاحتفاظ بكل أصل مرمز عبر <strong>SPV ثلاثي المستويات في مركز دبي المالي العالمي (DIFC)</strong>:</p>
+                <ul>
+                    <li><strong>الطبقة 1 (شركة الإدارة):</strong> MoHan RWA Ltd (منطقة DMCC الحرة، دبي)</li>
+                    <li><strong>الطبقة 2 (SPV الأصل):</strong> SPV مستقلة مسجلة في DIFC لكل أصل، تحتفظ بالملكية القانونية الحصرية للأصل الأساسي مع دفاتر وحسابات بنكية مستقلة تمامًا.</li>
+                    <li><strong>الطبقة 3 (حقوق حامل الرمز):</strong> حقوق قانونية في إيرادات SPV (ليست أسهمًا أو ديونًا)، متوافقة مع تعريف VARA ARVA.</li>
+                </ul>
+                <div class="compliance-warning"><strong>ضمانات العزل عن الإفلاس</strong><br>يتضمن SPV شروط الغرض، وعهود عدم الدمج، وحق النقض للمدير المستقل. يعتمد فعالية العزل عن الإفلاس على الامتثال المستمر؛ إذا فشل SPV في الحفاظ على دفاتر منفصلة، فقد تأمر المحاكم بالدمج الجوهري.</div>
+
+                <h2>④ الرأي القانوني والمستندات المطلوبة</h2>
+                <p>وفقًا لأحدث توجيهات VARA (أبريل 2026)، يجب أن يحصل كل مشروع ARVA على <strong>رأي قانوني إلزامي من خمسة أجزاء</strong> من مستشار قانوني مؤهل:</p>
+                <ol>
+                    <li>تحليل وضع قانون الأوراق المالية لرمز ARVA (تحديد غير الورقة المالية)</li>
+                    <li>تأكيد الملكية القانونية للأصل الأساسي وخلوه من العيوب</li>
+                    <li>تقييم فعالية العزل عن الإفلاس لهيكل SPV</li>
+                    <li>الامتثال التنظيمي لإصدار الرمز وتوزيعه وتداوله في السوق الثانوية</li>
+                    <li>امتثال إطار مكافحة غسل الأموال وتمويل الإرهاب</li>
+                </ol>
+                <p>يجب أن تصدر جميع الآراء القانونية من قبل مكتب محاماة دولي معترف به في دبي، وتُقدم مع IDQ، خطة العمل، الورقة البيضاء، ودليل AML.</p>
+
+                <h2>⑤ الإفصاح المستمر والتقارير</h2>
+                <ul>
+                    <li><strong>تقارير تشغيل الأصول:</strong> نشر ربع سنوي لإثبات الاحتياطي المدقق والتقارير التشغيلية من قبل محاسب قانوني إماراتي.</li>
+                    <li><strong>إخطارات التغييرات الجوهرية:</strong> خلال 48 ساعة عبر العقد الذكي وإيداعها لدى VARA.</li>
+                    <li><strong>الإفصاح الفوري على السلسلة:</strong> جميع سجلات السك والحرق والتحويلات والأرباح قابلة للاستعلام عبر مستكشف XRPL.</li>
+                    <li><strong>التدقيق السنوي:</strong> من قبل شركة محاسبة معترف بها من قبل DFSA، يتم الإفصاح عنه خلال 90 يومًا بعد نهاية السنة المالية.</li>
+                </ul>
+
+                <h2>⑥ حماية المستثمر والاحتياطي للمخاطر</h2>
+                <p><strong>آلية احتياطي المخاطر:</strong> يجب على المصدرين إيداع 5%-8% من إجمالي التمويل في حساب وصاية معزول معتمد في دبي كاحتياطي للمخاطر، وفي الحالات القصوى يبدأ أمين مستقل إجراءات التعويض.</p>
+                <p><strong>حل النزاعات:</strong> أي نزاع ينشأ عن هذه المنصة أو الرموز يُحال بشكل حصري إلى <strong>محاكم مركز دبي المالي العالمي (DIFC)</strong>. يتنازل الطرفان عن حق المحاكمة أمام هيئة المحلفين والدعاوى الجماعية، ولغة الإجراءات الإنجليزية. القانون الواجب التطبيق هو <strong>القوانين الاتحادية الإماراتية وقوانين DIFC</strong>.</p>
+                <p><strong>آليات الخروج:</strong> يمكن للمستثمرين الخروج عبر الاسترداد الدوري (بعد انتهاء القيد ربع سنويًا بصافي قيمة الأصول السائدة)، أو النقل الخاص (بين المستثمرين المعتمدين)، أو التصفية الإجبارية (بموافقة 66% من حاملي الرموز).</p>
+                <div class="compliance-warning"><strong>إخلاء المسؤولية الهام</strong><br>المعلومات في هذه الصفحة لا تشكل نصيحة قانونية. يجب استشارة مستشارين قانونيين وماليين مرخصين قبل أي قرار استثماري. لا تضمن المنصة أي عوائد ثابتة، وقد تنخفض قيمة الرمز إلى الصفر.</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p><span class="lang-zh">© 2026 MoHan RWA Platform. 保留所有权利。</span><span class="lang-en">© 2026 MoHan RWA Platform. All rights reserved.</span><span class="lang-ar">© 2026 منصة MoHan RWA. جميع الحقوق محفوظة.</span></p>
+        <p><a href="privacy-policy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span><span class="lang-ar">سياسة الخصوصية</span></a> | <a href="terms-of-service.html"><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span><span class="lang-ar">شروط الخدمة</span></a></p>
+    </div>
+</footer>
+</body>
+</html>

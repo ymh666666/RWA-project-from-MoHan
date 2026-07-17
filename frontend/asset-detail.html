@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MoHan - 资产详情 | Asset Detail</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --accent-cyan: #06b6d4;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f1f5f9;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        body[data-lang="en"] .lang-zh { display: none !important; }
+        body:not([data-lang="en"]) .lang-en { display: none !important; }
+        
+        header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.95); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        body.dark .logo { color: white; }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .back-btn:hover { color: var(--primary-blue); }
+        .theme-toggle, .lang-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+        .theme-toggle:hover, .lang-btn:hover { border-color: var(--primary-blue); color: var(--primary-blue); }
+        
+        main { padding: 32px 0 60px; }
+        .asset-header {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 24px 32px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            position: relative;
+        }
+        .ico-badge {
+            position: absolute;
+            top: 20px;
+            right: 32px;
+            background: #f59e0b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .header-left { flex: 1.5; min-width: 250px; }
+        .header-right { flex: 1; min-width: 200px; display: flex; align-items: center; justify-content: center; }
+        .asset-image {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #2563eb15, #06b6d415);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .asset-image i { font-size: 5rem; color: var(--primary-blue); }
+        .asset-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
+        .asset-code { font-size: 0.9rem; color: var(--text-light); margin-bottom: 16px; display: inline-block; background: var(--bg-light); padding: 4px 12px; border-radius: 20px; }
+        .asset-tags { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+        .asset-tag { font-size: 0.8rem; color: var(--text-light); }
+        .asset-tag i { margin-right: 4px; color: var(--primary-blue); }
+        
+        .price-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+        .price-stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price-main { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+        .current-price { font-size: 2rem; font-weight: 800; }
+        .price-change { font-size: 1rem; font-weight: 600; }
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+        .price-stats-grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .stat-item { text-align: left; }
+        .stat-label { font-size: 0.7rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 1rem; font-weight: 700; color: var(--text-main); }
+        
+        .chart-main-container { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
+        .chart-area { flex: 3; min-width: 300px; background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); padding: 20px; position: relative; }
+        .tech-indicators { flex: 1; min-width: 260px; background: var(--card-bg); border-radius: var(--radius); border: 1px solid var(--border-color); padding: 20px; }
+        .indicator-group { margin-bottom: 20px; }
+        .indicator-title { font-weight: 700; margin-bottom: 12px; font-size: 0.9rem; border-left: 3px solid var(--primary-blue); padding-left: 10px; }
+        .indicator-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+        .indicator-label { color: var(--text-light); }
+        .indicator-value { font-weight: 600; color: var(--text-main); }
+        
+        .chart-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .timeframe-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+        .timeframe-btn {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 5px 12px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+        .timeframe-btn.active { background: var(--primary-blue); border-color: var(--primary-blue); color: white; }
+        .zoom-btn, .toggle-vol-macd {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+        .zoom-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        body.dark .zoom-btn, body.dark .toggle-vol-macd {
+            background: #2d3a4f;
+            border-color: #5a6e8a;
+            color: #f0f4fa;
+        }
+        body.dark .zoom-btn:hover, body.dark .toggle-vol-macd:hover {
+            background: #3b4d66;
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        
+        .chart-wrapper { width: 100%; position: relative; min-height: 400px; }
+        .volume-chart-wrapper { width: 100%; position: relative; min-height: 120px; margin-top: 16px; }
+        canvas { width: 100% !important; max-width: 100%; cursor: crosshair; }
+        
+        /* 信息卡片样式 */
+        .info-card {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(30, 30, 40, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 10;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: opacity 0.1s;
+        }
+        body.dark .info-card {
+            background: rgba(0, 0, 0, 0.75);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .info-card .date { font-weight: 600; margin-bottom: 4px; }
+        .info-card .row { display: flex; justify-content: space-between; gap: 16px; margin-top: 4px; }
+        .info-card .change-up { color: #ef4444; }
+        .info-card .change-down { color: #10b981; }
+        
+        .subscribe-btn, .trade-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .subscribe-btn:hover, .trade-btn:hover { background: #1e40af; transform: translateY(-2px); }
+        .trade-btn-group { display: flex; gap: 12px; }
+        .trade-btn.buy { background: #10b981; }
+        .trade-btn.buy:hover { background: #059669; }
+        .trade-btn.sell { background: #ef4444; }
+        .trade-btn.sell:hover { background: #dc2626; }
+        .trade-btn i { display: none; }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            max-width: 550px;
+            width: 90%;
+            padding: 28px;
+            animation: modalIn 0.2s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal h3 { font-size: 1.4rem; margin-bottom: 20px; }
+        .modal input, .modal select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-light);
+            color: var(--text-main);
+            font-size: 1rem;
+            margin-bottom: 16px;
+        }
+        .modal-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+        .modal-buttons button { padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: 600; }
+        .modal-buttons .confirm { background: var(--primary-blue); color: white; border: none; }
+        .modal-buttons .cancel { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+        .order-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .order-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 2px solid transparent;
+        }
+        .order-tab.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+        .preview-section {
+            background: var(--bg-light);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            margin-bottom: 16px;
+        }
+        .preview-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .preview-row.total { font-weight: 800; font-size: 16px; border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; }
+        .info-note { font-size: 11px; color: var(--text-light); margin-top: 8px; }
+        .balance-info {
+            background: var(--bg-light);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .info-section, .news-section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 24px 32px;
+            margin-bottom: 24px;
+        }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .info-item { background: var(--bg-light); padding: 16px; border-radius: 10px; }
+        .info-item strong { display: block; color: var(--text-main); margin-bottom: 8px; font-size: 0.85rem; }
+        .info-item span { font-size: 1rem; font-weight: 600; color: var(--text-main); }
+        
+        .news-item { padding: 16px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; }
+        .news-item:last-child { border-bottom: none; }
+        .news-item:hover { background: var(--bg-light); padding-left: 12px; margin-left: -12px; padding-right: 12px; margin-right: -12px; border-radius: 8px; }
+        .news-title { font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .news-date { font-size: 0.7rem; color: var(--text-light); }
+        
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        
+        @media (max-width: 992px) { .chart-main-container { flex-direction: column; } .asset-header { flex-direction: column; } .header-right { justify-content: flex-start; } }
+        @media (max-width: 768px) { .asset-header, .price-section, .info-section, .news-section { padding: 20px; } .current-price { font-size: 1.5rem; } }
+        @media (max-width: 640px) {
+            .header-inner { padding: 0 16px; gap: 8px; }
+            .back-btn, .theme-toggle, .lang-btn { font-size: 12px; padding: 4px 10px; }
+            .asset-header { padding: 16px; gap: 16px; }
+            .asset-title { font-size: 1.3rem; }
+            .price-stats-row { flex-direction: column; align-items: flex-start; }
+            .chart-toolbar { flex-direction: column; align-items: stretch; }
+            .timeframe-buttons { justify-content: space-between; }
+            .timeframe-btn { padding: 8px 0; flex: 1; text-align: center; font-size: 0.7rem; }
+            .info-grid { grid-template-columns: 1fr; gap: 12px; }
+            .subscribe-btn, .trade-btn { width: 100%; text-align: center; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang');
+        if (lang === 'en') document.body.setAttribute('data-lang', 'en');
+        else document.body.setAttribute('data-lang', 'zh');
+        if (!localStorage.getItem('demo_balance')) localStorage.setItem('demo_balance', '10000');
+        if (!localStorage.getItem('demo_portfolio')) localStorage.setItem('demo_portfolio', '{}');
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+        if (window.chartComponent) window.chartComponent.redraw();
+    }
+    function toggleLanguage() {
+        const newLang = document.body.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+        document.body.setAttribute('data-lang', newLang);
+        localStorage.setItem('mohan_lang', newLang);
+        location.reload();
+    }
+    function getReturnUrl() {
+        return 'marketplace.html';
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="javascript:void(0);" class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回</span><span class="lang-en">Back</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span></button>
+            <button class="lang-btn" onclick="toggleLanguage()">中 / EN</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container" id="assetDetailContainer"></div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2026 MoHan RWA Platform. <span class="lang-zh">保留所有权利。</span><span class="lang-en">All rights reserved.</span></p>
+        <p><a href="privacy-policy.html">隐私政策</a> | <a href="terms-of-service.html">服务条款</a></p>
+    </div>
+</footer>
+
+<!-- 认购模态框 -->
+<div id="subscribeModal" class="modal-overlay">
+    <div class="modal">
+        <h3 id="modalTitle"><span class="lang-zh">认购资产</span><span class="lang-en">Subscribe</span></h3>
+        <input type="number" id="subscribeAmount" placeholder="数量" step="1" min="1" value="1">
+        <p id="totalPrice" style="margin-bottom: 16px; font-weight: 600;"></p>
+        <div class="modal-buttons">
+            <button class="cancel" id="cancelSubscribe"><span class="lang-zh">取消</span><span class="lang-en">Cancel</span></button>
+            <button class="confirm" id="confirmSubscribe"><span class="lang-zh">确认认购</span><span class="lang-en">Confirm</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- 二级市场订单模态框（重新设计的带预览功能） -->
+<div id="tradeModal" class="modal-overlay">
+    <div class="modal">
+        <h3 id="tradeModalTitle"><span class="lang-zh">买入委托单</span><span class="lang-en">Buy Order</span></h3>
+        <div class="order-tabs">
+            <div class="order-tab active" data-order-type="buy"><span class="lang-zh">买入</span><span class="lang-en">Buy</span></div>
+            <div class="order-tab" data-order-type="sell"><span class="lang-zh">卖出</span><span class="lang-en">Sell</span></div>
+        </div>
+        <div class="balance-info">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span><span class="lang-zh">当前价格</span><span class="lang-en">Current Price</span></span>
+                <strong id="modalCurrentPrice">$0.00</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span><span class="lang-zh">可用现金</span><span class="lang-en">Cash Balance</span></span>
+                <strong id="modalAvailableCash">$0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span><span class="lang-zh">当前持仓</span><span class="lang-en">Current Position</span></span>
+                <strong id="modalCurrentPosition">0</strong>
+            </div>
+        </div>
+        <div class="order-form-group">
+            <label><span class="lang-zh">数量</span><span class="lang-en">Quantity</span></label>
+            <input type="number" id="orderAmount" step="1" min="1" value="1">
+        </div>
+        <div class="order-form-group">
+            <label><span class="lang-zh">委托单类型</span><span class="lang-en">Order Type</span></label>
+            <select id="orderTypeSelect">
+                <option value="market"><span class="lang-zh">市价单</span><span class="lang-en">Market Order</span></option>
+                <option value="limit"><span class="lang-zh">限价单</span><span class="lang-en">Limit Order</span></option>
+            </select>
+        </div>
+        <div id="limitPriceGroup" class="order-form-group" style="display: none;">
+            <label><span class="lang-zh">限价 (USD)</span><span class="lang-en">Limit Price (USD)</span></label>
+            <input type="number" id="orderPrice" step="0.01" placeholder="0.00">
+        </div>
+        <div class="order-form-group">
+            <label><span class="lang-zh">生效时间</span><span class="lang-en">Time in Force</span></label>
+            <select id="timeInForce">
+                <option value="day"><span class="lang-zh">当日有效</span><span class="lang-en">Day</span></option>
+                <option value="gtc"><span class="lang-zh">撤销前有效</span><span class="lang-en">GTC</span></option>
+            </select>
+        </div>
+        
+        <div id="previewArea" class="preview-section" style="display: none;">
+            <div class="preview-row"><span><span class="lang-zh">总额</span><span class="lang-en">Total</span></span><span id="previewTotal">$0.00</span></div>
+            <div class="preview-row"><span><span class="lang-zh">费用估算</span><span class="lang-en">Commission & Fees (est.)</span></span><span id="previewFee">$1.04</span></div>
+            <div class="preview-row"><span><span class="lang-zh">总计</span><span class="lang-en">Total Cost</span></span><span id="previewNetTotal">$0.00</span></div>
+            <div class="preview-row"><span><span class="lang-zh">当前持仓</span><span class="lang-en">Current Position</span></span><span id="previewCurrPos">0</span></div>
+            <div class="preview-row"><span><span class="lang-zh">交易后持仓*</span><span class="lang-en">Post-Trade Position*</span></span><span id="previewPostPos">0</span></div>
+            <div class="preview-row"><span><span class="lang-zh">可用资金</span><span class="lang-en">Available Funds</span></span><span id="previewAvailable">$0</span></div>
+            <div class="preview-row"><span><span class="lang-zh">交易后可用资金*</span><span class="lang-en">Post-Trade Available*</span></span><span id="previewPostAvailable">$0</span></div>
+            <div class="info-note">* <span class="lang-zh">此为当前估算，可能会改变</span><span class="lang-en">Estimate, subject to change</span></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="cancel" id="cancelTrade"><span class="lang-zh">取消</span><span class="lang-en">Cancel</span></button>
+            <button class="confirm" id="previewTradeBtn"><span class="lang-zh">预览</span><span class="lang-en">Preview</span></button>
+            <button class="confirm" id="confirmTradeBtn" style="display: none;"><span class="lang-zh">确认下单</span><span class="lang-en">Place Order</span></button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+  import { TOKEN_ADDRESS, TOKEN_ABI, TOKEN_PRICE_ETH, BACKEND_URL } from './config.js';
+  window.TOKEN_ADDRESS = TOKEN_ADDRESS;
+  window.TOKEN_ABI = TOKEN_ABI;
+  window.TOKEN_PRICE_ETH = TOKEN_PRICE_ETH;
+  window.BACKEND_URL = BACKEND_URL;
+  console.log("链上配置加载成功", { TOKEN_ADDRESS, TOKEN_PRICE_ETH, BACKEND_URL });
+</script>
+
+<script>
+    const assetsData = {
+        1: { code: "MHT-RE01", nameZh: "曼哈顿中心写字楼", nameEn: "Manhattan Center Office Tower", typeZh: "商业地产", typeEn: "Commercial Real Estate", location: "纽约曼哈顿, 美国", yield: "6.8", valuation: "$1.2亿", tokenSupply: "12,000,000", tokenPrice: "10.25", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Manhattan Office SPV LLC", custodian: "纽约州信托公司", marketCap: "$1.23亿", high52w: "11.50", low52w: "8.90", volume: "125000", priceChange: 2.35, status: "ico", turnoverRate: "1.2%", high24h: "10.50", low24h: "10.00" },
+        2: { code: "MHT-AC02", nameZh: "波音787-9 航空器", nameEn: "Boeing 787-9 Aircraft", typeZh: "特殊动产", typeEn: "Movable Property", location: "芝加哥奥黑尔机场, 美国", yield: "5.2", valuation: "$1.5亿", tokenSupply: "15,000,000", tokenPrice: "9.87", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Aircraft Lease SPV LLC", custodian: "威尔明顿信托", marketCap: "$1.48亿", high52w: "10.80", low52w: "8.50", volume: "98000", priceChange: -0.45, status: "trading", turnoverRate: "0.8%", high24h: "9.95", low24h: "9.80" },
+        3: { code: "MHT-SF03", nameZh: "光伏电站特许经营权", nameEn: "Solar Farm Concession", typeZh: "生产经营资产", typeEn: "Production Asset", location: "加利福尼亚州, 美国", yield: "7.5", valuation: "$8000万", tokenSupply: "8,000,000", tokenPrice: "10.02", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Solar Energy SPV LLC", custodian: "道明银行", marketCap: "$8020万", high52w: "11.20", low52w: "9.10", volume: "156000", priceChange: 5.12, status: "trading", turnoverRate: "2.1%", high24h: "10.20", low24h: "9.85" },
+        4: { code: "MHT-IP04", nameZh: "AI 专利组合", nameEn: "AI Patent Portfolio", typeZh: "知识产权", typeEn: "Intellectual Property", location: "全球", yield: "9.0", valuation: "$5000万", tokenSupply: "5,000,000", tokenPrice: "10.15", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "半年度", dividendEn: "Semi-annual", spv: "IP Royalty SPV LLC", custodian: "纽约梅隆银行", marketCap: "$5075万", high52w: "11.00", low52w: "9.20", volume: "67000", priceChange: 1.18, status: "ico", turnoverRate: "0.5%", high24h: "10.20", low24h: "10.10" },
+        5: { code: "MHT-LON05", nameZh: "伦敦金融城写字楼", nameEn: "London Financial District Office", typeZh: "商业地产", typeEn: "Commercial Real Estate", location: "伦敦, 英国", yield: "6.2", valuation: "$9500万", tokenSupply: "9,500,000", tokenPrice: "9.50", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "London Office SPV LLC", custodian: "伦敦信托", marketCap: "$9025万", high52w: "10.50", low52w: "8.70", volume: "112000", priceChange: 0.82, status: "trading", turnoverRate: "1.0%", high24h: "9.60", low24h: "9.40" },
+        6: { code: "MHT-AC06", nameZh: "空客A330 航空器", nameEn: "Airbus A330 Aircraft", typeZh: "特殊动产", typeEn: "Movable Property", location: "巴黎, 法国", yield: "5.5", valuation: "$1.2亿", tokenSupply: "12,000,000", tokenPrice: "9.20", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Airbus Lease SPV LLC", custodian: "巴黎信托", marketCap: "$1.10亿", high52w: "10.20", low52w: "8.30", volume: "89000", priceChange: -1.05, status: "trading", turnoverRate: "0.9%", high24h: "9.30", low24h: "9.10" },
+        7: { code: "MHT-SG07", nameZh: "新加坡数据中心", nameEn: "Singapore Data Center", typeZh: "生产经营资产", typeEn: "Production Asset", location: "新加坡", yield: "8.2", valuation: "$1.1亿", tokenSupply: "11,000,000", tokenPrice: "11.00", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Singapore Data SPV LLC", custodian: "新加坡银行", marketCap: "$1.21亿", high52w: "12.00", low52w: "9.80", volume: "203000", priceChange: 3.21, status: "trading", turnoverRate: "2.3%", high24h: "11.20", low24h: "10.80" },
+        8: { code: "MHT-IP08", nameZh: "半导体专利组合", nameEn: "Semiconductor Patent Portfolio", typeZh: "知识产权", typeEn: "Intellectual Property", location: "全球", yield: "7.8", valuation: "$6800万", tokenSupply: "6,800,000", tokenPrice: "9.80", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "半年度", dividendEn: "Semi-annual", spv: "Semiconductor IP SPV LLC", custodian: "硅谷银行", marketCap: "$6664万", high52w: "10.80", low52w: "8.90", volume: "78000", priceChange: 2.04, status: "ico", turnoverRate: "0.6%", high24h: "9.85", low24h: "9.75" },
+        9: { code: "MHT-JP09", nameZh: "东京银座商业楼", nameEn: "Tokyo Ginza Commercial Building", typeZh: "商业地产", typeEn: "Commercial Real Estate", location: "东京, 日本", yield: "5.9", valuation: "$8800万", tokenSupply: "8,800,000", tokenPrice: "8.80", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Tokyo Ginza SPV LLC", custodian: "三菱信托", marketCap: "$7744万", high52w: "9.80", low52w: "8.00", volume: "95000", priceChange: -0.32, status: "trading", turnoverRate: "0.7%", high24h: "8.85", low24h: "8.75" },
+        10: { code: "MHT-WF10", nameZh: "海上风电场", nameEn: "Offshore Wind Farm", typeZh: "生产经营资产", typeEn: "Production Asset", location: "北海, 欧洲", yield: "7.0", valuation: "$1.0亿", tokenSupply: "10,000,000", tokenPrice: "9.50", lockupZh: "12个月", lockupEn: "12 months", dividendZh: "季度", dividendEn: "Quarterly", spv: "Offshore Wind SPV LLC", custodian: "北欧信托", marketCap: "$9500万", high52w: "10.50", low52w: "8.60", volume: "134000", priceChange: 1.56, status: "ico", turnoverRate: "1.1%", high24h: "9.55", low24h: "9.45" }
+    };
+
+    let currentAssetId = null;
+    let chartComponent = null;
+    
+    function getDemoBalance() { return parseFloat(localStorage.getItem('demo_balance') || '10000'); }
+    function setDemoBalance(val) { localStorage.setItem('demo_balance', val.toString()); }
+    function getDemoPortfolio(assetId) { const p = JSON.parse(localStorage.getItem('demo_portfolio') || '{}'); return p[assetId] || 0; }
+    function setDemoPortfolio(assetId, amount) { const p = JSON.parse(localStorage.getItem('demo_portfolio') || '{}'); p[assetId] = amount; localStorage.setItem('demo_portfolio', JSON.stringify(p)); }
+    
+    // 资产数据生成器（保持原有随机波动）
+    function generateHistoryData(assetPrice, points, timeframe) {
+        const isMinute = timeframe === 'minute';
+        if (isMinute) {
+            let price = assetPrice;
+            const data = [];
+            let seed = assetPrice * 100;
+            for (let i=0; i<points; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                const change = (seed / 233280 - 0.5) * 0.003;
+                price += change;
+                price = Math.max(assetPrice * 0.95, Math.min(assetPrice * 1.05, price));
+                data.push(parseFloat(price.toFixed(2)));
+            }
+            return data;
+        } else {
+            let close = assetPrice;
+            const data = [];
+            let seed = assetPrice * 100;
+            for (let i=0; i<points; i++) {
+                seed = (seed * 9301 + 49297) % 233280;
+                const change = (seed / 233280 - 0.5) * 0.02;
+                const open = close;
+                let newClose = parseFloat((close + change).toFixed(2));
+                newClose = Math.max(assetPrice * 0.85, Math.min(assetPrice * 1.15, newClose));
+                const body = Math.abs(newClose - open);
+                const shadowTop = body * (0.05 + Math.random() * 0.1);
+                const shadowBottom = body * (0.05 + Math.random() * 0.1);
+                const high = parseFloat((Math.max(open, newClose) + shadowTop).toFixed(2));
+                const low = parseFloat((Math.min(open, newClose) - shadowBottom).toFixed(2));
+                data.push({ open, high, low, close: newClose });
+                close = newClose;
+            }
+            return data;
+        }
+    }
+    
+    function generateVolumeData(points, baseVolume = 50000) {
+        const volumes = [];
+        let seed = baseVolume;
+        for (let i=0; i<points; i++) {
+            seed = (seed * 9301 + 49297) % 233280;
+            const vol = baseVolume + (seed / 233280 - 0.5) * 30000;
+            volumes.push(Math.floor(Math.max(10000, vol)));
+        }
+        return volumes;
+    }
+    
+    function calculateMA(data, period) {
+        const result = [];
+        const prices = data.map(d => d.close !== undefined ? d.close : d);
+        for (let i=0; i<prices.length; i++) {
+            if (i < period-1) { result.push(null); continue; }
+            let sum = 0;
+            for (let j=0; j<period; j++) sum += prices[i-j];
+            result.push(parseFloat((sum/period).toFixed(2)));
+        }
+        return result;
+    }
+    
+    function getDateForIndex(idx, total, timeframe) {
+        const now = new Date();
+        let date;
+        if (timeframe === 'minute') {
+            date = new Date(now);
+            date.setMinutes(date.getMinutes() - (total - 1 - idx));
+            return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+        } else if (timeframe === 'day') {
+            date = new Date(now);
+            date.setDate(date.getDate() - (total - 1 - idx));
+            return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
+        } else if (timeframe === 'week') {
+            date = new Date(now);
+            date.setDate(date.getDate() - (total - 1 - idx) * 7);
+            const day = date.getDay();
+            const diff = (day === 0 ? 6 : day - 1);
+            date.setDate(date.getDate() - diff + 6);
+            return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')}`;
+        } else if (timeframe === 'month') {
+            date = new Date(now);
+            date.setMonth(date.getMonth() - (total - 1 - idx));
+            date.setMonth(date.getMonth()+1, 0);
+            return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}`;
+        } else {
+            date = new Date(now);
+            date.setFullYear(date.getFullYear() - (total - 1 - idx));
+            return `${date.getFullYear()}`;
+        }
+    }
+    
+    // 图表组件（支持拖拽平移、滚轮缩放，成交量图正确绘制）
+    class ChartComponent {
+        constructor(canvasId, volCanvasId, assetPrice, timeframe, points, volumeData, tickerData) {
+            this.canvas = document.getElementById(canvasId);
+            this.volCanvas = document.getElementById(volCanvasId);
+            this.ctx = this.canvas.getContext('2d');
+            this.volCtx = this.volCanvas.getContext('2d');
+            this.assetPrice = assetPrice;
+            this.timeframe = timeframe;
+            this.fullData = tickerData;
+            this.volumes = volumeData;
+            this.totalPoints = this.fullData.length;
+            this.startIndex = 0;
+            this.endIndex = this.totalPoints - 1;
+            this.displayCount = this.totalPoints;
+            this.dragStartX = 0;
+            this.dragStartIndex = 0;
+            this.isDragging = false;
+            this.volMode = 'volume';
+            this.infoCard = null;
+            this.init();
+        }
+        
+        init() {
+            this.setViewFromDisplayCount();
+            this.addEventListeners();
+            this.redraw();
+            this.createInfoCard();
+        }
+        
+        setViewFromDisplayCount() {
+            if (this.displayCount >= this.totalPoints) {
+                this.startIndex = 0;
+                this.endIndex = this.totalPoints - 1;
+                this.displayCount = this.totalPoints;
+            } else {
+                let center = Math.floor((this.startIndex + this.endIndex) / 2);
+                let half = Math.floor(this.displayCount / 2);
+                this.startIndex = Math.max(0, center - half);
+                this.endIndex = Math.min(this.totalPoints - 1, this.startIndex + this.displayCount - 1);
+                if (this.endIndex - this.startIndex + 1 < this.displayCount) {
+                    this.startIndex = Math.max(0, this.endIndex - this.displayCount + 1);
+                }
+            }
+        }
+        
+        setDisplayCount(newCount, mouseX = null) {
+            let oldCount = this.displayCount;
+            this.displayCount = Math.min(this.totalPoints, Math.max(10, newCount));
+            if (mouseX !== null) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const mouseCanvasX = (mouseX - rect.left) * scaleX;
+                const chartArea = { left: 50, right: 20 };
+                const drawWidth = this.canvas.width - chartArea.left - chartArea.right;
+                if (drawWidth > 0) {
+                    let idxRatio = (mouseCanvasX - chartArea.left) / drawWidth;
+                    let oldIndex = Math.floor(this.startIndex + idxRatio * (this.endIndex - this.startIndex));
+                    oldIndex = Math.min(this.totalPoints-1, Math.max(0, oldIndex));
+                    let newStart = oldIndex - idxRatio * this.displayCount;
+                    this.startIndex = Math.max(0, Math.min(this.totalPoints - this.displayCount, Math.floor(newStart)));
+                    this.endIndex = Math.min(this.totalPoints - 1, this.startIndex + this.displayCount - 1);
+                }
+            } else {
+                let centerIndex = Math.floor((this.startIndex + this.endIndex) / 2);
+                this.startIndex = Math.max(0, centerIndex - Math.floor(this.displayCount/2));
+                this.endIndex = Math.min(this.totalPoints-1, this.startIndex + this.displayCount - 1);
+            }
+            this.redraw();
+        }
+        
+        pan(deltaX) {
+            const deltaIdx = Math.round(deltaX / (this.canvas.width - 70) * this.displayCount);
+            let newStart = this.startIndex - deltaIdx;
+            newStart = Math.max(0, Math.min(this.totalPoints - this.displayCount, newStart));
+            if (newStart !== this.startIndex) {
+                this.startIndex = newStart;
+                this.endIndex = this.startIndex + this.displayCount - 1;
+                this.redraw();
+            }
+        }
+        
+        addEventListeners() {
+            this.canvas.addEventListener('mousedown', (e) => {
+                this.isDragging = true;
+                this.dragStartX = e.clientX;
+                this.dragStartIndex = this.startIndex;
+                this.canvas.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (this.isDragging) {
+                    const dx = e.clientX - this.dragStartX;
+                    const deltaIdx = Math.round(dx / (this.canvas.width - 70) * this.displayCount);
+                    let newStart = this.dragStartIndex - deltaIdx;
+                    newStart = Math.max(0, Math.min(this.totalPoints - this.displayCount, newStart));
+                    if (newStart !== this.startIndex) {
+                        this.startIndex = newStart;
+                        this.endIndex = this.startIndex + this.displayCount - 1;
+                        this.redraw();
+                    }
+                }
+            });
+            window.addEventListener('mouseup', () => {
+                this.isDragging = false;
+                this.canvas.style.cursor = 'crosshair';
+            });
+            this.canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? 1.1 : 0.9;
+                let newCount = Math.round(this.displayCount * delta);
+                newCount = Math.min(this.totalPoints, Math.max(10, newCount));
+                if (newCount !== this.displayCount) {
+                    this.setDisplayCount(newCount, e.clientX);
+                }
+            });
+            this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+            this.canvas.addEventListener('mouseleave', () => this.hideInfoCard());
+        }
+        
+        onMouseMove(e) {
+            const rect = this.canvas.getBoundingClientRect();
+            const scaleX = this.canvas.width / rect.width;
+            const scaleY = this.canvas.height / rect.height;
+            const mouseX = (e.clientX - rect.left) * scaleX;
+            const mouseY = (e.clientY - rect.top) * scaleY;
+            const chartArea = { top: 20, bottom: 40, left: 50, right: 20 };
+            const drawWidth = this.canvas.width - chartArea.left - chartArea.right;
+            const drawHeight = this.canvas.height - chartArea.top - chartArea.bottom;
+            if (mouseX >= chartArea.left && mouseX <= this.canvas.width - chartArea.right && mouseY >= chartArea.top && mouseY <= this.canvas.height - chartArea.bottom) {
+                let idxRatio = (mouseX - chartArea.left) / drawWidth;
+                let dataIdx = Math.floor(this.startIndex + idxRatio * (this.endIndex - this.startIndex));
+                dataIdx = Math.min(this.totalPoints-1, Math.max(0, dataIdx));
+                this.showInfoCard(dataIdx, mouseX, mouseY);
+                this.drawCrosshair(mouseX, mouseY, dataIdx);
+            } else {
+                this.hideInfoCard();
+                this.redraw();
+            }
+        }
+        
+        drawCrosshair(mouseX, mouseY, dataIdx) {
+            this.redraw();
+            const ctx = this.ctx;
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([5,5]);
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 1;
+            ctx.moveTo(mouseX, 0);
+            ctx.lineTo(mouseX, this.canvas.height);
+            ctx.stroke();
+            ctx.moveTo(0, mouseY);
+            ctx.lineTo(this.canvas.width, mouseY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            const isMinute = this.timeframe === 'minute';
+            let price = 0;
+            if (isMinute) price = this.fullData[dataIdx];
+            else price = this.fullData[dataIdx].close;
+            const chartArea = { top: 20, bottom: 40, left: 50, right: 20 };
+            const drawHeight = this.canvas.height - chartArea.top - chartArea.bottom;
+            const allPrices = isMinute ? this.fullData.slice(this.startIndex, this.endIndex+1) : this.fullData.slice(this.startIndex, this.endIndex+1).flatMap(d=>[d.high,d.low]);
+            const minPrice = Math.min(...allPrices) * 0.99;
+            const maxPrice = Math.max(...allPrices) * 1.01;
+            const priceRange = maxPrice - minPrice;
+            const y = chartArea.top + drawHeight - ((price - minPrice) / priceRange) * drawHeight;
+            ctx.font = '12px sans-serif';
+            const priceText = '$' + price.toFixed(2);
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.fillRect(5, y-12, ctx.measureText(priceText).width+10, 18);
+            ctx.fillStyle = '#fff';
+            ctx.fillText(priceText, 10, y-2);
+            ctx.restore();
+        }
+        
+        showInfoCard(idx, mouseX, mouseY) {
+            if (!this.infoCard) return;
+            const isMinute = this.timeframe === 'minute';
+            let open, high, low, close;
+            if (isMinute) {
+                open = close = high = low = this.fullData[idx];
+            } else {
+                const d = this.fullData[idx];
+                open = d.open; high = d.high; low = d.low; close = d.close;
+            }
+            const change = ((close - open) / open * 100).toFixed(2);
+            const changeClass = change >= 0 ? 'change-up' : 'change-down';
+            const changeSymbol = change >= 0 ? '+' : '';
+            const dateStr = getDateForIndex(idx, this.totalPoints, this.timeframe);
+            const turnover = assetsData[currentAssetId]?.turnoverRate || '0.0%';
+            this.infoCard.innerHTML = `
+                <div class="date">${dateStr}</div>
+                <div class="row"><span>开: $${open.toFixed(2)}</span><span>高: $${high.toFixed(2)}</span><span>低: $${low.toFixed(2)}</span><span>收: $${close.toFixed(2)}</span></div>
+                <div class="row"><span>涨跌: <span class="${changeClass}">${changeSymbol}${change}%</span></span><span>换手: ${turnover}</span></div>
+            `;
+            this.infoCard.style.display = 'block';
+            let left = mouseX + 15;
+            let top = mouseY + 15;
+            const rect = this.canvas.getBoundingClientRect();
+            if (left + this.infoCard.offsetWidth > rect.width) left = mouseX - this.infoCard.offsetWidth - 15;
+            if (top + this.infoCard.offsetHeight > rect.height) top = mouseY - this.infoCard.offsetHeight - 15;
+            this.infoCard.style.left = left + 'px';
+            this.infoCard.style.top = top + 'px';
+        }
+        
+        hideInfoCard() {
+            if (this.infoCard) this.infoCard.style.display = 'none';
+            this.redraw();
+        }
+        
+        createInfoCard() {
+            const container = document.querySelector('.chart-area');
+            if (!container) return;
+            this.infoCard = document.createElement('div');
+            this.infoCard.className = 'info-card';
+            this.infoCard.style.display = 'none';
+            container.appendChild(this.infoCard);
+        }
+        
+        redraw() {
+            if (!this.canvas || !this.volCanvas) return;
+            const isDark = document.body.classList.contains('dark');
+            const isMinute = this.timeframe === 'minute';
+            const visibleData = this.fullData.slice(this.startIndex, this.endIndex+1);
+            const visibleVolumes = this.volumes.slice(this.startIndex, this.endIndex+1);
+            const width = this.canvas.clientWidth;
+            const height = 400;
+            this.canvas.width = width;
+            this.canvas.height = height;
+            const ctx = this.ctx;
+            ctx.clearRect(0,0,width,height);
+            ctx.fillStyle = isDark ? '#1e293b' : '#ffffff';
+            ctx.fillRect(0,0,width,height);
+            
+            const chartArea = { top: 20, bottom: 40, left: 50, right: 20 };
+            const drawWidth = width - chartArea.left - chartArea.right;
+            const drawHeight = height - chartArea.top - chartArea.bottom;
+            const spacing = drawWidth / (visibleData.length - 1);
+            let allPrices;
+            if (isMinute) allPrices = visibleData;
+            else allPrices = visibleData.flatMap(d=>[d.high, d.low]);
+            const minPrice = Math.min(...allPrices) * 0.99;
+            const maxPrice = Math.max(...allPrices) * 1.01;
+            const priceRange = maxPrice - minPrice;
+            
+            if (isMinute) {
+                ctx.beginPath();
+                for (let i=0; i<visibleData.length; i++) {
+                    const x = chartArea.left + i * spacing;
+                    const y = chartArea.top + drawHeight - ((visibleData[i] - minPrice) / priceRange) * drawHeight;
+                    if (i===0) ctx.moveTo(x,y);
+                    else ctx.lineTo(x,y);
+                }
+                ctx.strokeStyle = '#2563eb';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                const ma5 = calculateMA(visibleData, 5);
+                const ma10 = calculateMA(visibleData, 10);
+                const ma20 = calculateMA(visibleData, 20);
+                [ma5, ma10, ma20].forEach((ma, idx) => {
+                    ctx.beginPath();
+                    ctx.strokeStyle = idx===0 ? '#f59e0b' : (idx===1 ? '#10b981' : '#ef4444');
+                    ctx.lineWidth = 1.5;
+                    let first = true;
+                    for (let i=0; i<ma.length; i++) {
+                        if (ma[i] !== null) {
+                            const x = chartArea.left + i * spacing;
+                            const y = chartArea.top + drawHeight - ((ma[i] - minPrice) / priceRange) * drawHeight;
+                            if (first) { ctx.moveTo(x,y); first=false; }
+                            else ctx.lineTo(x,y);
+                        } else first=true;
+                    }
+                    ctx.stroke();
+                });
+            } else {
+                const barWidth = Math.min(12, drawWidth / visibleData.length * 0.85);
+                for (let i=0; i<visibleData.length; i++) {
+                    const d = visibleData[i];
+                    const x = chartArea.left + i * spacing;
+                    const yOpen = chartArea.top + drawHeight - ((d.open - minPrice) / priceRange) * drawHeight;
+                    const yClose = chartArea.top + drawHeight - ((d.close - minPrice) / priceRange) * drawHeight;
+                    const yHigh = chartArea.top + drawHeight - ((d.high - minPrice) / priceRange) * drawHeight;
+                    const yLow = chartArea.top + drawHeight - ((d.low - minPrice) / priceRange) * drawHeight;
+                    const color = d.close >= d.open ? '#ef4444' : '#10b981';
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.moveTo(x + barWidth/2, yHigh);
+                    ctx.lineTo(x + barWidth/2, yLow);
+                    ctx.stroke();
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x, Math.min(yOpen, yClose), barWidth, Math.abs(yClose - yOpen) || 1);
+                }
+                const closePrices = visibleData.map(d=>d.close);
+                const ma5 = calculateMA(closePrices, 5);
+                const ma10 = calculateMA(closePrices, 10);
+                const ma20 = calculateMA(closePrices, 20);
+                [ma5, ma10, ma20].forEach((ma, idx) => {
+                    ctx.beginPath();
+                    ctx.strokeStyle = idx===0 ? '#f59e0b' : (idx===1 ? '#10b981' : '#ef4444');
+                    ctx.lineWidth = 1.5;
+                    let first = true;
+                    for (let i=0; i<ma.length; i++) {
+                        if (ma[i] !== null) {
+                            const x = chartArea.left + i * spacing + barWidth/2;
+                            const y = chartArea.top + drawHeight - ((ma[i] - minPrice) / priceRange) * drawHeight;
+                            if (first) { ctx.moveTo(x,y); first=false; }
+                            else ctx.lineTo(x,y);
+                        } else first=true;
+                    }
+                    ctx.stroke();
+                });
+            }
+            // 网格和纵坐标
+            ctx.strokeStyle = isDark ? '#334155' : '#e2e8f0';
+            ctx.lineWidth = 0.5;
+            for (let i=0; i<=4; i++) {
+                const y = chartArea.top + i * drawHeight / 4;
+                ctx.beginPath();
+                ctx.moveTo(chartArea.left, y);
+                ctx.lineTo(width - chartArea.right, y);
+                ctx.stroke();
+            }
+            ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            ctx.font = '10px sans-serif';
+            for (let i=0; i<=4; i++) {
+                const price = minPrice + (maxPrice - minPrice) * i / 4;
+                ctx.fillText('$' + price.toFixed(2), 5, chartArea.top + drawHeight - i * drawHeight / 4 + 3);
+            }
+            
+            // 横轴标签
+            const labelStep = Math.max(1, Math.floor(visibleData.length / 6));
+            for (let i=0; i<visibleData.length; i+=labelStep) {
+                const x = chartArea.left + i * spacing;
+                const idxGlobal = this.startIndex + i;
+                if (idxGlobal < this.totalPoints) {
+                    let label = getDateForIndex(idxGlobal, this.totalPoints, this.timeframe);
+                    // 简化显示：分时只显示小时分钟，日线显示月/日，周线显示月/日，月线显示年-月，年线显示年
+                    if (this.timeframe === 'minute') label = label.slice(11, 16);
+                    else if (this.timeframe === 'day') label = label.slice(5);
+                    else if (this.timeframe === 'week') label = label.slice(5);
+                    else if (this.timeframe === 'month') label = label.slice(0, 7);
+                    else if (this.timeframe === 'year') label = label.slice(0, 4);
+                    ctx.fillText(label, x-15, height-8);
+                }
+            }
+            
+            // ========== 成交量图（完全重做，每个数据点对应一根柱，与主图缩放同步）==========
+            const volWidth = this.volCanvas.clientWidth;
+            const volHeight = 120;
+            this.volCanvas.width = volWidth;
+            this.volCanvas.height = volHeight;
+            const volCtx = this.volCtx;
+            volCtx.clearRect(0,0,volWidth,volHeight);
+            volCtx.fillStyle = isDark ? '#1e293b' : '#ffffff';
+            volCtx.fillRect(0,0,volWidth,volHeight);
+            
+            if (visibleVolumes.length === 0) return;
+            
+            const volArea = { top: 10, bottom: 20, left: 50, right: 20 };
+            const volDrawWidth = volWidth - volArea.left - volArea.right;
+            const volDrawHeight = volHeight - volArea.top - volArea.bottom;
+            
+            // 计算最大成交量（用于归一化）
+            const maxVol = Math.max(...visibleVolumes);
+            const safeMaxVol = maxVol > 0 ? maxVol : 1;
+            
+            // 动态计算柱子宽度：分时图极细（1.5~2px），其他周期根据数据量自动调整
+            let barWidth;
+            if (isMinute) {
+                barWidth = Math.min(2.5, Math.max(1.5, volDrawWidth / visibleVolumes.length * 0.8));
+            } else {
+                barWidth = Math.min(12, Math.max(4, volDrawWidth / visibleVolumes.length * 0.7));
+            }
+            
+            // 计算总宽度，如果小于可用宽度则居中显示
+            const totalWidth = barWidth * visibleVolumes.length;
+            let startX = volArea.left;
+            if (totalWidth < volDrawWidth) {
+                startX = volArea.left + (volDrawWidth - totalWidth) / 2;
+            }
+            
+            // 绘制每一根成交量柱
+            for (let i = 0; i < visibleVolumes.length; i++) {
+                const vol = visibleVolumes[i];
+                const barHeight = (vol / safeMaxVol) * volDrawHeight;
+                const x = startX + i * barWidth;
+                const y = volArea.top + volDrawHeight - barHeight;
+                // 根据K线涨跌决定颜色（分时图中全部为红色）
+                let isUp;
+                if (isMinute) {
+                    // 分时图：用当前价格对比上一分钟，简单判断涨跌
+                    if (i === 0) isUp = true;
+                    else isUp = visibleData[i] >= visibleData[i-1];
+                } else {
+                    isUp = visibleData[i].close >= visibleData[i].open;
+                }
+                volCtx.fillStyle = isUp ? '#ef4444' : '#10b981';
+                volCtx.fillRect(x, y, barWidth - 0.5, barHeight);
+            }
+            
+            // 显示最大成交量标签
+            volCtx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+            volCtx.font = '10px sans-serif';
+            const volText = (maxVol / 10000).toFixed(0);
+            volCtx.fillText(volText === 'NaN' ? '0万' : volText + '万', volWidth - 40, volArea.top + 15);
+        }
+        
+        calculateMACD(closePrices, fast=12, slow=26, signal=9) {
+            // MACD 实现保留，但音量切换按钮可继续使用
+            const emaFast = [];
+            const emaSlow = [];
+            const macd = [];
+            const signalLine = [];
+            const histogram = [];
+            let prevEmaFast = closePrices[0];
+            let prevEmaSlow = closePrices[0];
+            let prevSignal = 0;
+            const kFast = 2/(fast+1);
+            const kSlow = 2/(slow+1);
+            const kSignal = 2/(signal+1);
+            for (let i=0; i<closePrices.length; i++) {
+                if (i===0) {
+                    emaFast.push(closePrices[i]);
+                    emaSlow.push(closePrices[i]);
+                } else {
+                    let ef = closePrices[i] * kFast + prevEmaFast * (1-kFast);
+                    let es = closePrices[i] * kSlow + prevEmaSlow * (1-kSlow);
+                    emaFast.push(ef);
+                    emaSlow.push(es);
+                    prevEmaFast = ef;
+                    prevEmaSlow = es;
+                }
+                const macdVal = emaFast[i] - emaSlow[i];
+                macd.push(macdVal);
+                if (i===0) signalLine.push(macdVal);
+                else {
+                    const sig = macdVal * kSignal + prevSignal * (1-kSignal);
+                    signalLine.push(sig);
+                    prevSignal = sig;
+                }
+                histogram.push(macd[i] - signalLine[i]);
+            }
+            return { macd, signal: signalLine, histogram };
+        }
+        
+        setVolMode(mode) {
+            this.volMode = mode;
+            this.redraw();
+        }
+        
+        setTimeframe(newTf, newFullData, newVolumes) {
+            this.timeframe = newTf;
+            this.fullData = newFullData;
+            this.volumes = newVolumes;
+            this.totalPoints = this.fullData.length;
+            this.displayCount = Math.min(this.totalPoints, 30);
+            this.setViewFromDisplayCount();
+            this.redraw();
+        }
+    }
+    
+    // ----- 完整交易逻辑（含模拟账户、预览、确认）-----
+    function setupTrade(assetId, tokenPrice) {
+        const buyBtn = document.getElementById('buyBtn');
+        const sellBtn = document.getElementById('sellBtn');
+        if (!buyBtn || !sellBtn) return;
+        
+        const modal = document.getElementById('tradeModal');
+        const orderTypeSelect = document.getElementById('orderTypeSelect');
+        const limitPriceGroup = document.getElementById('limitPriceGroup');
+        const orderPriceInput = document.getElementById('orderPrice');
+        const orderAmountInput = document.getElementById('orderAmount');
+        const previewArea = document.getElementById('previewArea');
+        const previewBtn = document.getElementById('previewTradeBtn');
+        const confirmBtn = document.getElementById('confirmTradeBtn');
+        let currentOrderType = 'buy';
+        
+        const updateLimitPriceVisibility = () => {
+            limitPriceGroup.style.display = orderTypeSelect.value === 'limit' ? 'block' : 'none';
+        };
+        orderTypeSelect.addEventListener('change', updateLimitPriceVisibility);
+        
+        document.querySelectorAll('.order-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentOrderType = tab.dataset.orderType;
+                document.getElementById('tradeModalTitle').innerHTML = currentOrderType === 'buy' ? 
+                    (document.body.getAttribute('data-lang') === 'zh' ? '买入委托单' : 'Buy Order') : 
+                    (document.body.getAttribute('data-lang') === 'zh' ? '卖出委托单' : 'Sell Order');
+                previewArea.style.display = 'none';
+                confirmBtn.style.display = 'none';
+                previewBtn.style.display = 'inline-flex';
+            });
+        });
+        
+        const openTradeModal = (type) => {
+            currentOrderType = type;
+            document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.order-tab[data-order-type="${type}"]`).classList.add('active');
+            document.getElementById('tradeModalTitle').innerHTML = type === 'buy' ? 
+                (document.body.getAttribute('data-lang') === 'zh' ? '买入委托单' : 'Buy Order') : 
+                (document.body.getAttribute('data-lang') === 'zh' ? '卖出委托单' : 'Sell Order');
+            orderPriceInput.value = tokenPrice;
+            orderAmountInput.value = 1;
+            orderTypeSelect.value = 'market';
+            updateLimitPriceVisibility();
+            document.getElementById('modalCurrentPrice').innerText = '$' + tokenPrice.toFixed(2);
+            document.getElementById('modalAvailableCash').innerText = '$' + getDemoBalance().toFixed(2);
+            document.getElementById('modalCurrentPosition').innerText = getDemoPortfolio(assetId);
+            previewArea.style.display = 'none';
+            confirmBtn.style.display = 'none';
+            previewBtn.style.display = 'inline-flex';
+            modal.classList.add('active');
+        };
+        
+        buyBtn.addEventListener('click', () => openTradeModal('buy'));
+        sellBtn.addEventListener('click', () => openTradeModal('sell'));
+        document.getElementById('cancelTrade').addEventListener('click', () => modal.classList.remove('active'));
+        
+        previewBtn.addEventListener('click', () => {
+            const amount = parseFloat(orderAmountInput.value);
+            if (isNaN(amount) || amount <= 0) { alert('请输入有效数量'); return; }
+            let price = tokenPrice;
+            if (orderTypeSelect.value === 'limit') {
+                const lp = parseFloat(orderPriceInput.value);
+                if (isNaN(lp) || lp <= 0) { alert('请输入有效限价'); return; }
+                price = lp;
+            }
+            const total = amount * price;
+            const fee = 1.04;
+            const netTotal = total + fee;
+            const currBalance = getDemoBalance();
+            const currPos = getDemoPortfolio(assetId);
+            let postPos = currPos, postAvailable = currBalance;
+            if (currentOrderType === 'buy') {
+                if (netTotal > currBalance) { alert('可用余额不足'); return; }
+                postPos = currPos + amount;
+                postAvailable = currBalance - netTotal;
+            } else {
+                if (amount > currPos) { alert('持仓不足'); return; }
+                postPos = currPos - amount;
+                postAvailable = currBalance + total - fee;
+            }
+            document.getElementById('previewTotal').innerText = '$' + total.toFixed(2);
+            document.getElementById('previewFee').innerText = '$' + fee.toFixed(2);
+            document.getElementById('previewNetTotal').innerText = '$' + netTotal.toFixed(2);
+            document.getElementById('previewCurrPos').innerText = currPos;
+            document.getElementById('previewPostPos').innerText = postPos;
+            document.getElementById('previewAvailable').innerText = '$' + currBalance.toFixed(2);
+            document.getElementById('previewPostAvailable').innerText = '$' + postAvailable.toFixed(2);
+            previewArea.style.display = 'block';
+            confirmBtn.style.display = 'inline-flex';
+            previewBtn.style.display = 'none';
+        });
+        
+        confirmBtn.addEventListener('click', () => {
+            const amount = parseFloat(orderAmountInput.value);
+            if (isNaN(amount) || amount <= 0) return;
+            let price = tokenPrice;
+            if (orderTypeSelect.value === 'limit') price = parseFloat(orderPriceInput.value);
+            const total = amount * price;
+            const fee = 1.04;
+            const netTotal = total + fee;
+            let currBalance = getDemoBalance();
+            let currPos = getDemoPortfolio(assetId);
+            if (currentOrderType === 'buy') {
+                if (netTotal > currBalance) { alert('余额不足'); return; }
+                setDemoBalance(currBalance - netTotal);
+                setDemoPortfolio(assetId, currPos + amount);
+                alert(`成功买入 ${amount} 个代币，花费 $${netTotal.toFixed(2)}`);
+            } else {
+                if (amount > currPos) { alert('持仓不足'); return; }
+                setDemoBalance(currBalance + total - fee);
+                setDemoPortfolio(assetId, currPos - amount);
+                alert(`成功卖出 ${amount} 个代币，获得 $${(total-fee).toFixed(2)}`);
+            }
+            modal.classList.remove('active');
+            location.reload(); // 刷新页面更新持仓显示
+        });
+        
+        modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+    }
+    
+    async function handleSubscribeOnChain(assetId, price, amount) {
+        const userId = localStorage.getItem('userId');
+        if (!userId) { alert('请先登录'); window.location.href='account.html'; return false; }
+        if (!window.ethereum) { alert('请安装 MetaMask 钱包'); return false; }
+        if (!window.TOKEN_ADDRESS) { alert('合约地址未配置'); return false; }
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const signerAddress = await signer.getAddress();
+            const totalEth = amount * window.TOKEN_PRICE_ETH;
+            const contract = new ethers.Contract(window.TOKEN_ADDRESS, window.TOKEN_ABI, signer);
+            const isWhitelisted = await contract.whitelisted(signerAddress);
+            if (!isWhitelisted) { alert('地址不在白名单中'); return false; }
+            const tx = await contract.buyTokens({ value: ethers.utils.parseEther(totalEth.toString()) });
+            await tx.wait();
+            try { await fetch(`${window.BACKEND_URL}/api/asset/subscribe`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ userId, assetId, amount, pricePerToken: price }) }); } catch(e) {}
+            alert(`认购成功！交易哈希: ${tx.hash.slice(0,10)}...`);
+            return true;
+        } catch(err) { alert('交易失败：'+err.message); return false; }
+    }
+    
+    function setupSubscribe(assetId, tokenPrice) {
+        const subscribeBtn = document.getElementById('openSubscribeBtn');
+        if (!subscribeBtn) return;
+        const newBtn = subscribeBtn.cloneNode(true);
+        subscribeBtn.parentNode.replaceChild(newBtn, subscribeBtn);
+        newBtn.addEventListener('click', () => {
+            const modal = document.getElementById('subscribeModal');
+            const totalSpan = document.getElementById('totalPrice');
+            const amountInput = document.getElementById('subscribeAmount');
+            const updateTotal = () => {
+                const amount = parseFloat(amountInput.value) || 0;
+                totalSpan.innerText = `总金额: $${(amount * tokenPrice).toFixed(2)} (实际支付 ${amount * window.TOKEN_PRICE_ETH} ETH)`;
+            };
+            amountInput.value = 1;
+            updateTotal();
+            amountInput.oninput = updateTotal;
+            modal.classList.add('active');
+            const confirmBtn = document.getElementById('confirmSubscribe');
+            const cancelBtn = document.getElementById('cancelSubscribe');
+            const confirmHandler = async () => {
+                const amount = parseFloat(amountInput.value);
+                if (isNaN(amount) || amount <= 0) { alert('请输入有效数量'); return; }
+                if (await handleSubscribeOnChain(assetId, tokenPrice, amount)) {
+                    modal.classList.remove('active');
+                    window.location.href = 'dashboard.html';
+                }
+            };
+            const cancelHandler = () => modal.classList.remove('active');
+            confirmBtn.onclick = confirmHandler;
+            cancelBtn.onclick = cancelHandler;
+            modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+        });
+    }
+    
+    function loadAsset() {
+        const id = getAssetId();
+        if (id === null || !assetsData[id]) {
+            document.getElementById('assetDetailContainer').innerHTML = `<div style="text-align:center; padding:60px;">Asset not found (id: ${id})</div>`;
+            return;
+        }
+        currentAssetId = id;
+        const asset = assetsData[id];
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+        const name = isZh ? asset.nameZh : asset.nameEn;
+        const type = isZh ? asset.typeZh : asset.typeEn;
+        const lockup = isZh ? asset.lockupZh : asset.lockupEn;
+        const dividend = isZh ? asset.dividendZh : asset.dividendEn;
+        const changeClass = asset.priceChange >= 0 ? 'positive' : 'negative';
+        const changeSign = asset.priceChange >= 0 ? '+' : '';
+        const price = parseFloat(asset.tokenPrice).toFixed(2);
+        const totalSupply = (asset.tokenSupply / 1000000).toFixed(0) + 'M';
+        const turnoverRate = asset.turnoverRate || '-';
+        const high24h = asset.high24h || '-';
+        const low24h = asset.low24h || '-';
+        const high52w = asset.high52w || '-';
+        const low52w = asset.low52w || '-';
+        const rsi = Math.floor(Math.random() * 30 + 45);
+        let actionButtons = '';
+        let icoBadge = '';
+        if (asset.status === 'ico') {
+            actionButtons = `<button class="subscribe-btn" id="openSubscribeBtn"><i class="fas fa-shopping-cart"></i> <span class="lang-zh">立即认购</span><span class="lang-en">Subscribe Now</span></button>`;
+            icoBadge = `<div class="ico-badge"><span class="lang-zh">ICO 进行中</span><span class="lang-en">ICO Live</span></div>`;
+        } else {
+            actionButtons = `<div class="trade-btn-group"><button class="trade-btn buy" id="buyBtn"><span class="lang-zh">买入</span><span class="lang-en">Buy</span></button><button class="trade-btn sell" id="sellBtn"><span class="lang-zh">卖出</span><span class="lang-en">Sell</span></button></div>`;
+        }
+        
+        document.getElementById('assetDetailContainer').innerHTML = `
+            <div class="asset-header">
+                ${icoBadge}
+                <div class="header-left">
+                    <div class="asset-title">${name}</div>
+                    <div class="asset-code">${asset.code}</div>
+                    <div class="asset-tags">
+                        <span class="asset-tag"><i class="fas fa-building"></i> ${type}</span>
+                        <span class="asset-tag"><i class="fas fa-map-marker-alt"></i> ${asset.location}</span>
+                        <span class="asset-tag"><i class="fas fa-chart-line"></i> ${asset.yield}%</span>
+                    </div>
+                </div>
+                <div class="header-right"><div class="asset-image"><i class="fas fa-building"></i></div></div>
+            </div>
+            <div class="price-section">
+                <div class="price-stats-row">
+                    <div class="price-main"><span class="current-price">$${price}</span><span class="price-change ${changeClass}">${changeSign}${asset.priceChange}%</span></div>
+                    <div class="price-stats-grid">
+                        <div class="stat-item"><div class="stat-label">${isZh ? '总市值' : 'Market Cap'}</div><div class="stat-value">${asset.marketCap}</div></div>
+                        <div class="stat-item"><div class="stat-label">${isZh ? '24h总量' : '24h Vol'}</div><div class="stat-value">${asset.volume}</div></div>
+                    </div>
+                </div>
+                ${actionButtons}
+            </div>
+            <div class="chart-main-container">
+                <div class="chart-area">
+                    <div class="chart-toolbar">
+                        <div class="timeframe-buttons">
+                            <button class="timeframe-btn" data-tf="minute"><span class="lang-zh">分时</span><span class="lang-en">Minute</span></button>
+                            <button class="timeframe-btn" data-tf="day"><span class="lang-zh">日线</span><span class="lang-en">Day</span></button>
+                            <button class="timeframe-btn" data-tf="week"><span class="lang-zh">周线</span><span class="lang-en">Week</span></button>
+                            <button class="timeframe-btn" data-tf="month"><span class="lang-zh">月线</span><span class="lang-en">Month</span></button>
+                            <button class="timeframe-btn" data-tf="year"><span class="lang-zh">年线</span><span class="lang-en">Year</span></button>
+                        </div>
+                        <div>
+                            <button class="zoom-btn" id="zoomOutBtn" title="${isZh ? '缩小时间范围' : 'Zoom Out'}">−</button>
+                            <button class="zoom-btn" id="zoomInBtn" title="${isZh ? '放大时间范围' : 'Zoom In'}">+</button>
+                            <button class="toggle-vol-macd" id="toggleVolumeMacdBtn">📊 ${isZh ? '成交量' : 'Volume'}</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper"><canvas id="mainChart" style="width:100%; height:400px;"></canvas></div>
+                    <div class="volume-chart-wrapper"><canvas id="volumeChart" style="width:100%; height:120px;"></canvas></div>
+                </div>
+                <div class="tech-indicators">
+                    <div class="indicator-group"><div class="indicator-title">${isZh ? '技术指标' : 'Technical Indicators'}</div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '当前价格' : 'Current Price'}</span><span class="indicator-value">$${price}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">MA5</span><span class="indicator-value">$${(parseFloat(price) * 0.98).toFixed(2)}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">MA10</span><span class="indicator-value">$${(parseFloat(price) * 0.96).toFixed(2)}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">MA20</span><span class="indicator-value">$${(parseFloat(price) * 0.94).toFixed(2)}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">RSI(14)</span><span class="indicator-value">${rsi}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '成交量' : 'Volume'}</span><span class="indicator-value">${(asset.volume / 10000).toFixed(1)}万</span></div></div>
+                    <div class="indicator-group"><div class="indicator-title">${isZh ? '关键数据' : 'Key Metrics'}</div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '年化收益率' : 'Annual Yield'}</span><span class="indicator-value">${asset.yield}%</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '总量' : 'Total Supply'}</span><span class="indicator-value">${totalSupply}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '24h换手率' : '24h Turnover'}</span><span class="indicator-value">${turnoverRate}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '24h高' : '24h High'}</span><span class="indicator-value">${high24h !== '-' ? '$'+high24h : '-'}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '24h低' : '24h Low'}</span><span class="indicator-value">${low24h !== '-' ? '$'+low24h : '-'}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '52周高' : '52W High'}</span><span class="indicator-value">${high52w !== '-' ? '$'+high52w : '-'}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '52周低' : '52W Low'}</span><span class="indicator-value">${low52w !== '-' ? '$'+low52w : '-'}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '锁定期' : 'Lock-up'}</span><span class="indicator-value">${lockup}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '分红频率' : 'Dividend'}</span><span class="indicator-value">${dividend}</span></div>
+                    <div class="indicator-row"><span class="indicator-label">${isZh ? '托管机构' : 'Custodian'}</span><span class="indicator-value">${asset.custodian}</span></div></div>
+                </div>
+            </div>
+            <div class="info-section"><h2><span class="lang-zh">资产详细信息</span><span class="lang-en">Asset Details</span></h2>
+            <div class="info-grid">
+                <div class="info-item"><strong>${isZh ? '资产估值' : 'Valuation'}</strong><span>${asset.valuation}</span></div>
+                <div class="info-item"><strong>${isZh ? '代币总供应量' : 'Total Supply'}</strong><span>${asset.tokenSupply}</span></div>
+                <div class="info-item"><strong>${isZh ? '发行价格' : 'Token Price'}</strong><span>$${price}</span></div>
+                <div class="info-item"><strong>${isZh ? '锁定期' : 'Lock-up'}</strong><span>${lockup}</span></div>
+                <div class="info-item"><strong>${isZh ? '分红频率' : 'Dividend'}</strong><span>${dividend}</span></div>
+                <div class="info-item"><strong>${isZh ? '托管机构' : 'Custodian'}</strong><span>${asset.custodian}</span></div>
+            </div></div>
+            <div class="news-section"><h2><span class="lang-zh">相关资讯</span><span class="lang-en">Related News</span></h2>
+            <div class="news-item"><div class="news-title">${name} ${isZh ? '租金收益率超预期' : 'Yield Exceeds Expectations'}</div><div class="news-date">2026-06-01 10:30</div></div>
+            <div class="news-item"><div class="news-title">${name} ${isZh ? '完成第二轮合规审计' : 'Passes Second Compliance Audit'}</div><div class="news-date">2026-05-28 14:15</div></div>
+            <div class="news-item"><div class="news-title">${isZh ? 'RWA 代币化市场热度上升' : 'RWA Tokenization Market Gains Momentum'}</div><div class="news-date">2026-05-25 09:00</div></div>
+            <div class="news-item"><div class="news-title">${name} ${isZh ? '新增机构投资者' : 'New Institutional Investors Added'}</div><div class="news-date">2026-05-22 16:45</div></div></div>
+        `;
+        
+        const startPrice = parseFloat(asset.tokenPrice);
+        const generateData = (tf, points) => {
+            const data = generateHistoryData(startPrice, points, tf);
+            const volumes = generateVolumeData(points, asset.volume);
+            return { data, volumes };
+        };
+        const minutePoints = 144;
+        const dayPoints = 90;
+        const weekPoints = 156;
+        const monthPoints = 48;
+        const yearPoints = 30;
+        const minuteData = generateData('minute', minutePoints);
+        const dayData = generateData('day', dayPoints);
+        const weekData = generateData('week', weekPoints);
+        const monthData = generateData('month', monthPoints);
+        const yearData = generateData('year', yearPoints);
+        
+        const charts = {
+            minute: { data: minuteData.data, volumes: minuteData.volumes },
+            day: { data: dayData.data, volumes: dayData.volumes },
+            week: { data: weekData.data, volumes: weekData.volumes },
+            month: { data: monthData.data, volumes: monthData.volumes },
+            year: { data: yearData.data, volumes: yearData.volumes }
+        };
+        
+        let currentTf = 'day';
+        let chartComponentObj = new ChartComponent('mainChart', 'volumeChart', startPrice, currentTf, charts[currentTf].data.length, charts[currentTf].volumes, charts[currentTf].data);
+        chartComponentObj.setDisplayCount(30);
+        window.chartComponent = chartComponentObj;
+        
+        document.querySelectorAll('.timeframe-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tf = btn.dataset.tf;
+                if (tf === currentTf) return;
+                currentTf = tf;
+                document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const newData = charts[tf].data;
+                const newVolumes = charts[tf].volumes;
+                chartComponentObj.setTimeframe(tf, newData, newVolumes);
+            });
+        });
+        document.querySelector('.timeframe-btn[data-tf="day"]').classList.add('active');
+        
+        const toggleBtn = document.getElementById('toggleVolumeMacdBtn');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                const newMode = chartComponentObj.volMode === 'volume' ? 'macd' : 'volume';
+                chartComponentObj.setVolMode(newMode);
+                toggleBtn.innerHTML = newMode === 'volume' ? '📊 成交量' : '📈 MACD';
+            });
+        }
+        document.getElementById('zoomInBtn')?.addEventListener('click', () => {
+            let newCount = Math.floor(chartComponentObj.displayCount * 0.8);
+            chartComponentObj.setDisplayCount(newCount);
+        });
+        document.getElementById('zoomOutBtn')?.addEventListener('click', () => {
+            let newCount = Math.floor(chartComponentObj.displayCount * 1.2);
+            chartComponentObj.setDisplayCount(newCount);
+        });
+        
+        if (asset.status === 'ico') {
+            setupSubscribe(id, parseFloat(asset.tokenPrice));
+        } else {
+            setupTrade(id, parseFloat(asset.tokenPrice));
+        }
+    }
+    
+    function getAssetId() {
+        let id = sessionStorage.getItem('selectedAssetId');
+        if (id !== null) {
+            sessionStorage.removeItem('selectedAssetId');
+            return parseInt(id, 10);
+        }
+        const params = new URLSearchParams(window.location.search);
+        id = params.get('id');
+        if (id !== null) return parseInt(id, 10);
+        return 1;
+    }
+    
+    document.getElementById('backBtn').addEventListener('click', () => {
+        window.location.href = getReturnUrl();
+    });
+    
+    window.loadAsset = loadAsset;
+    window.addEventListener('DOMContentLoaded', () => { loadAsset(); });
+</script>
+</body>
+</html>

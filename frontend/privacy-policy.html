@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoHan RWA - 隐私政策 | Privacy Policy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+        body[data-lang="en"] .lang-zh { display: none !important; }
+        body:not([data-lang="en"]) .lang-en { display: none !important; }
+        
+        header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.92); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+        body.dark .logo {
+            color: #ffffff;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .back-btn:hover { color: var(--primary-blue); }
+        .lang-btn, .theme-toggle {
+            background: var(--bg-light);
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        body.dark .lang-btn,
+        body.dark .theme-toggle {
+            background: #2d3a4f;
+            border-color: #7e8c9e;
+            color: #f0f4fa;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            font-weight: 700;
+        }
+        body.dark .lang-btn:hover,
+        body.dark .theme-toggle:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: #1e2a3a;
+        }
+        
+        main { padding: 60px 0; }
+        .policy-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 40px 48px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        h1 { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; letter-spacing: -0.5px; }
+        .last-updated { color: var(--text-light); font-size: 0.9rem; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); margin: 32px 0 16px; }
+        p, li { margin-bottom: 0.8rem; }
+        ul { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+        .highlight { background: #f0f9ff; border-left: 3px solid var(--primary-blue); padding: 16px 24px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+        body.dark .highlight { background: rgba(37,99,235,0.1); }
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        
+        /* 暗色模式标题对比度优化 */
+        body.dark h1,
+        body.dark h2,
+        body.dark .last-updated,
+        body.dark .highlight strong {
+            color: #ffffff;
+        }
+        body.dark .highlight {
+            color: #e2e8f0;
+        }
+        
+        @media (max-width: 768px) {
+            .policy-card { padding: 28px 24px; }
+            h1 { font-size: 1.8rem; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 0 16px; }
+            .policy-card { padding: 20px 16px; }
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            .highlight { padding: 12px 16px; }
+            .header-inner { flex-wrap: wrap; gap: 8px; padding: 0 16px; }
+            .back-btn, .lang-btn, .theme-toggle { font-size: 12px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang');
+        if (lang === 'en') document.body.setAttribute('data-lang', 'en');
+        else document.body.setAttribute('data-lang', 'zh');
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function toggleLanguage() {
+        const newLang = document.body.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+        document.body.setAttribute('data-lang', newLang);
+        localStorage.setItem('mohan_lang', newLang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回主页</span><span class="lang-en">Back to Home</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span></button>
+            <button class="lang-btn" onclick="toggleLanguage()">中 / EN</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="policy-card">
+            <h1><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span></h1>
+            <div class="last-updated"><span class="lang-zh">最后更新：2026年5月26日 | 版本 v1.0</span><span class="lang-en">Last Updated: May 26, 2026 | Version 1.0</span></div>
+            
+            <div class="lang-zh">
+                <p>MoHan RWA 平台（以下简称“MoHan”、“我们”）尊重并保护您的隐私。本政策解释我们如何收集、使用、存储和披露您的个人信息。</p>
+                <h2>1. 我们收集的信息</h2>
+                <ul>
+                    <li><strong>身份验证信息</strong>：姓名、地址、出生日期、政府签发的身份证件、纳税人识别号（TIN）或 SSN 后四位。</li>
+                    <li><strong>联系信息</strong>：电子邮箱、手机号码、邮寄地址。</li>
+                    <li><strong>财务信息</strong>：银行账户信息、资产证明、收入来源、年收入及净资产范围（用于合格投资者认证）。</li>
+                    <li><strong>技术信息</strong>：IP 地址、设备标识符、浏览器类型、操作系统、访问时间戳及日志记录。</li>
+                    <li><strong>区块链信息</strong>：您用于接收代币的钱包地址（链上公开，但我们不将地址与您的身份公开关联）。</li>
+                    <li><strong>尽职调查信息</strong>：职业、政治敏感人物（PEP）状态、资金来源说明等，以满足反洗钱（AML）要求。</li>
+                </ul>
+                <h2>2. 信息的使用</h2>
+                <p>我们使用您的信息用于：完成 KYC/AML 验证和合格投资者认证；执行代币认购、收益分配及协议转让；发送资产运营报告、重大事项通知和投票提案；检测和防范欺诈、洗钱、制裁违规；改进平台安全性和用户体验。</p>
+                <h2>3. 信息的共享</h2>
+                <p>我们不会出售您的个人信息。仅在以下情形共享：与为我们提供身份验证、反洗钱筛查、资产托管、审计、法律服务的合作方共享（签署保密协议）；应法律、监管或法院要求而披露；在代币协议转让时向受让方披露必要的投资者资质信息；获得您明确同意的情况下。</p>
+                <h2>4. 数据安全与存储</h2>
+                <p>我们采用 AES-256 加密存储个人信息，传输使用 TLS 1.3 协议。数据存储于美国 SOC 2 Type II 认证的数据中心。您需自行保管钱包私钥，平台无法访问您的私钥。</p>
+                <h2>5. 数据保留</h2>
+                <p>在您持有代币期间及账户关闭后至少 <strong>7 年</strong>（为遵守证券法和反洗钱记录保存要求）。到期后安全删除或匿名化。</p>
+                <h2>6. 您的权利</h2>
+                <p>您有权访问、更正、删除您的个人信息，限制或反对某些处理，以及获取数据便携副本。请通过 yangmohan945@163.com 联系我们，我们将在 30 天内响应。</p>
+                <div class="highlight">🔐 本平台已投保数字资产综合险，并通过 SOC 2 Type II 审计。您的数据安全是我们的首要关切。</div>
+            </div>
+            
+            <div class="lang-en">
+                <p>MoHan RWA Platform respects your privacy. This policy explains how we collect, use, and protect your personal information.</p>
+                <h2>1. Information We Collect</h2>
+                <ul>
+                    <li><strong>Identity</strong>: Name, address, date of birth, government-issued ID, taxpayer identification number (or last 4 SSN).</li>
+                    <li><strong>Contact</strong>: Email, phone number, mailing address.</li>
+                    <li><strong>Financial</strong>: Bank account details, asset statements, income source, annual income and net worth range (for accredited investor verification).</li>
+                    <li><strong>Technical</strong>: IP address, device identifiers, browser type, OS, timestamps, log records.</li>
+                    <li><strong>Blockchain</strong>: Wallet address used to receive tokens (on-chain public, but we do not publicly link it to your identity).</li>
+                    <li><strong>Due Diligence</strong>: Occupation, PEP status, source of funds description to comply with AML regulations.</li>
+                </ul>
+                <h2>2. Use of Information</h2>
+                <p>We use your information for: KYC/AML and accredited investor verification; token subscription, distribution of yields, and private transfers; sending operating reports, material event notices, and voting proposals; detecting fraud, money laundering, and sanctions violations; improving platform security and user experience.</p>
+                <h2>3. Sharing of Information</h2>
+                <p>We do not sell your personal information. Sharing occurs only with: service providers under confidentiality agreements (identity verification, AML screening, custody, audit, legal); as required by law, regulation, or court order; to disclose necessary investor qualifications to a transferee in a private token transfer; with your explicit consent.</p>
+                <h2>4. Data Security & Storage</h2>
+                <p>We encrypt personal information using AES-256 at rest and TLS 1.3 in transit. Data is stored in SOC 2 Type II certified data centers in the United States. You are responsible for safekeeping your wallet private keys; we cannot access them.</p>
+                <h2>5. Data Retention</h2>
+                <p>We retain your information while you hold tokens and for at least <strong>7 years</strong> after account closure (to comply with securities laws and AML recordkeeping). After retention period, data is securely deleted or anonymized.</p>
+                <h2>6. Your Rights</h2>
+                <p>You have the right to access, correct, delete your data, restrict or object to certain processing, and receive a portable copy. Contact us at yangmohan945@163.com; we will respond within 30 days.</p>
+                <div class="highlight">🔐 Our platform maintains digital asset insurance and SOC 2 Type II certification. Your data security is our priority.</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2026 MoHan RWA Platform. <span class="lang-zh">保留所有权利。</span><span class="lang-en">All rights reserved.</span></p>
+        <p><a href="privacy-policy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span></a> | <a href="terms-of-service.html"><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span></a></p>
+    </div>
+</footer>
+</body>
+</html>

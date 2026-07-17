@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoHan - 投资者仪表盘 | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --accent-cyan: #06b6d4;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-md: 0 4px 20px rgba(37, 99, 235, 0.08);
+            --shadow-hover: 0 10px 30px rgba(37, 99, 235, 0.15);
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        body[data-lang="en"] .lang-zh { display: none !important; }
+        body:not([data-lang="en"]) .lang-en { display: none !important; }
+        
+        header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.92); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        body.dark .logo { color: white; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .lang-btn, .theme-toggle, .logout-btn, .settings-btn {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .lang-btn:hover, .theme-toggle:hover, .logout-btn:hover, .settings-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        
+        main { padding: 32px 0 60px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            transition: 0.2s;
+        }
+        .stat-card:hover { border-color: var(--primary-blue); box-shadow: var(--shadow-md); }
+        .stat-label { color: var(--text-light); font-size: 0.85rem; margin-bottom: 8px; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: var(--primary-dark); }
+        body.dark .stat-value { color: white; }
+        .stat-change { font-size: 0.8rem; margin-top: 8px; }
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+        }
+        .card-full { grid-column: 1 / -1; }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 3px solid var(--primary-blue);
+            padding-left: 12px;
+        }
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .asset-table th, .asset-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .asset-table th { color: var(--text-light); font-weight: 600; font-size: 0.8rem; }
+        .watchlist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .watchlist-item:last-child { border-bottom: none; }
+        .watchlist-symbol { font-weight: 700; }
+        .watchlist-price { font-weight: 600; }
+        .news-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        .news-item:last-child { border-bottom: none; }
+        .news-title { font-weight: 600; margin-bottom: 4px; }
+        .news-date { font-size: 0.7rem; color: var(--text-light); }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+            font-size: 0.85rem;
+        }
+        .btn-primary { background: var(--primary-blue); color: white; }
+        .btn-primary:hover { background: #1e40af; transform: translateY(-1px); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        .btn-outline:hover { background: #eff6ff; }
+        
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        
+        @media (max-width: 768px) {
+            .two-columns { grid-template-columns: 1fr; }
+            .stat-value { font-size: 1.3rem; }
+        }
+        @media (max-width: 640px) {
+            .header-inner { padding: 0 16px; }
+            .nav-right { gap: 8px; }
+            .lang-btn, .theme-toggle, .settings-btn, .logout-btn { padding: 4px 10px; font-size: 12px; }
+            .stats-grid { gap: 12px; }
+            .stat-card { padding: 12px; }
+            .stat-value { font-size: 1.2rem; }
+            .card { padding: 16px; }
+            .card-title { font-size: 1rem; }
+            .asset-table { min-width: 500px; }
+            .card-full { overflow-x: auto; }
+            .btn { padding: 8px 12px; font-size: 0.75rem; }
+            .watchlist-item { flex-direction: column; align-items: flex-start; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang');
+        if (lang === 'en') document.body.setAttribute('data-lang', 'en');
+        else document.body.setAttribute('data-lang', 'zh');
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function toggleLanguage() {
+        const newLang = document.body.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+        document.body.setAttribute('data-lang', newLang);
+        localStorage.setItem('mohan_lang', newLang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="index.html" class="logo">MoHan</a>
+        <div class="nav-right">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span></button>
+            <button class="lang-btn" onclick="toggleLanguage()">中 / EN</button>
+            <a href="settings.html" class="settings-btn"><i class="fas fa-cog"></i> <span class="lang-zh">设置</span><span class="lang-en">Settings</span></a>
+            <button class="logout-btn" id="logoutBtn"><span class="lang-zh">登出</span><span class="lang-en">Logout</span></button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="two-columns">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-chart-line"></i> <span class="lang-zh">收益走势</span><span class="lang-en">Performance</span></div>
+                <canvas id="performanceChart" height="200" style="width:100%; height:200px;"></canvas>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-star"></i> <span class="lang-zh">自选关注</span><span class="lang-en">Watchlist</span></div>
+                <div id="watchlistContainer"></div>
+            </div>
+        </div>
+        <div class="card card-full">
+            <div class="card-title"><i class="fas fa-coins"></i> <span class="lang-zh">我的持仓</span><span class="lang-en">Holdings</span></div>
+            <div style="overflow-x: auto;">
+                <table class="asset-table" id="holdingsTable">
+                    <thead>
+                        <tr><th><span class="lang-zh">资产</span><span class="lang-en">Asset</span></th>
+                            <th><span class="lang-zh">持仓数量</span><span class="lang-en">Amount</span></th>
+                            <th><span class="lang-zh">当前价值 (USD)</span><span class="lang-en">Value (USD)</span></th>
+                            <th><span class="lang-zh">24h涨跌</span><span class="lang-en">24h Change</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="holdingsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="two-columns">
+            <div class="card">
+                <div class="card-title"><i class="fas fa-newspaper"></i> <span class="lang-zh">投资组合新闻</span><span class="lang-en">Portfolio News</span></div>
+                <div id="newsContainer"></div>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-bolt"></i> <span class="lang-zh">快捷操作</span><span class="lang-en">Quick Actions</span></div>
+                <div id="quickActions" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- 管理员入口将在此处动态插入 -->
+                    <button class="btn btn-primary" id="bindWalletBtn">🔗 <span class="lang-zh">绑定钱包</span><span class="lang-en">Bind Wallet</span></button>
+                    <button class="btn btn-outline" id="buyMoreBtn"><i class="fas fa-shopping-cart"></i> <span class="lang-zh">认购新资产</span><span class="lang-en">Buy New Asset</span></button>
+                    <button class="btn btn-outline" id="orderHistoryBtn"><i class="fas fa-history"></i> <span class="lang-zh">订单历史</span><span class="lang-en">Order History</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2026 MoHan RWA Platform. <span class="lang-zh">保留所有权利。</span><span class="lang-en">All rights reserved.</span></p>
+        <p><a href="privacy-policy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span></a> | <a href="terms-of-service.html"><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span></a></p>
+    </div>
+</footer>
+
+<script type="module">
+  import { TOKEN_ADDRESS, TOKEN_ABI, TOKEN_PRICE_ETH, BACKEND_URL } from './config.js';
+  window.TOKEN_ADDRESS = TOKEN_ADDRESS;
+  window.TOKEN_ABI = TOKEN_ABI;
+  window.TOKEN_PRICE_ETH = TOKEN_PRICE_ETH;
+  window.BACKEND_URL = BACKEND_URL;
+  console.log("Dashboard config loaded", { TOKEN_ADDRESS, BACKEND_URL });
+</script>
+
+<script>
+    const API_BASE = window.BACKEND_URL || "http://localhost:3001";
+    
+    function getUserId() { return localStorage.getItem('userId'); }
+    function getUserRole() { return localStorage.getItem('userRole') || 'user'; }
+
+    async function checkAuth() {
+        const userId = getUserId();
+        if (!userId) {
+            window.location.href = 'account.html';
+            return false;
+        }
+        return true;
+    }
+
+    const assetsInfo = {
+        1: { nameZh: '曼哈顿写字楼', nameEn: 'Manhattan Office', price: 10.25, symbol: 'MHT-RE01', change: 2.35 },
+        2: { nameZh: '波音787-9', nameEn: 'Boeing 787-9', price: 9.87, symbol: 'MHT-AC02', change: -0.45 },
+        3: { nameZh: '光伏电站', nameEn: 'Solar Farm', price: 10.02, symbol: 'MHT-SF03', change: 5.12 },
+        4: { nameZh: 'AI专利组合', nameEn: 'AI Patent Portfolio', price: 10.15, symbol: 'MHT-IP04', change: 1.18 },
+        5: { nameZh: '伦敦金融城写字楼', nameEn: 'London Office', price: 9.50, symbol: 'MHT-LON05', change: 0.82 },
+        6: { nameZh: '空客A330', nameEn: 'Airbus A330', price: 9.20, symbol: 'MHT-AC06', change: -1.05 },
+        7: { nameZh: '新加坡数据中心', nameEn: 'Singapore Data Center', price: 11.00, symbol: 'MHT-SG07', change: 3.21 },
+        8: { nameZh: '半导体专利组合', nameEn: 'Semiconductor IP', price: 9.80, symbol: 'MHT-IP08', change: 2.04 },
+        9: { nameZh: '东京银座商业楼', nameEn: 'Tokyo Ginza', price: 8.80, symbol: 'MHT-JP09', change: -0.32 },
+        10: { nameZh: '海上风电场', nameEn: 'Offshore Wind', price: 9.50, symbol: 'MHT-WF10', change: 1.56 }
+    };
+
+    let performanceChart = null;
+
+    async function loadOnChainBalance() {
+        if (!window.ethereum) return 0;
+        if (!window.TOKEN_ADDRESS) return 0;
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const accounts = await provider.listAccounts();
+            if (accounts.length === 0) return 0;
+            const contract = new ethers.Contract(window.TOKEN_ADDRESS, window.TOKEN_ABI, provider);
+            const balance = await contract.balanceOf(accounts[0]);
+            const decimals = await contract.decimals();
+            return Number(ethers.utils.formatUnits(balance, decimals));
+        } catch(e) {
+            console.warn("获取链上余额失败", e);
+            return 0;
+        }
+    }
+
+    // ========== 显示管理员入口（新增） ==========
+    function showAdminEntry() {
+        const role = getUserRole();
+        if (role === 'admin') {
+            const container = document.getElementById('quickActions');
+            if (container) {
+                // 检查是否已存在，避免重复添加
+                if (document.getElementById('adminEntryBtn')) return;
+                const btn = document.createElement('button');
+                btn.id = 'adminEntryBtn';
+                btn.className = 'btn btn-primary';
+                btn.style.background = '#0f172a';
+                btn.style.border = '1px solid #0f172a';
+                btn.innerHTML = '<i class="fas fa-cog"></i> <span class="lang-zh">管理后台</span><span class="lang-en">Admin Panel</span>';
+                btn.onclick = () => window.location.href = 'admin.html';
+                container.prepend(btn);
+            }
+        }
+    }
+
+    async function loadDashboard() {
+        const userId = getUserId();
+        if (!userId) return;
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+
+        let portfolio = { totalValue: 0, cashBalance: 0, unrealizedPnL: 0, buyingPower: 0 };
+        try {
+            const res = await fetch(`${API_BASE}/api/user/${userId}/portfolio`);
+            if (res.ok) portfolio = await res.json();
+        } catch(e) { console.warn(e); }
+
+        let holdings = [];
+        try {
+            const res = await fetch(`${API_BASE}/api/user/${userId}/holdings`);
+            if (res.ok) holdings = await res.json();
+            holdings = holdings.map(h => ({
+                ...h,
+                assetInfo: assetsInfo[h.asset_id] || { nameZh: `资产${h.asset_id}`, nameEn: `Asset ${h.asset_id}`, price: 10, change: 0 }
+            }));
+        } catch(e) { console.warn(e); }
+
+        // 获取链上代币余额
+        const onChainBalance = await loadOnChainBalance();
+        if (onChainBalance > 0) {
+            holdings.unshift({
+                asset_id: 999,
+                amount: onChainBalance,
+                assetInfo: {
+                    nameZh: '链上 MHT 代币',
+                    nameEn: 'On-chain MHT',
+                    price: window.TOKEN_PRICE_ETH || 0.01,
+                    change: 0,
+                    symbol: 'MHT'
+                }
+            });
+        }
+
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-card"><div class="stat-label">${isZh ? '总资产 (USD)' : 'Total Assets'}</div><div class="stat-value">$${portfolio.totalValue.toLocaleString()}</div></div>
+            <div class="stat-card"><div class="stat-label">${isZh ? '已结算现金' : 'Settled Cash'}</div><div class="stat-value">$${portfolio.cashBalance.toLocaleString()}</div></div>
+            <div class="stat-card"><div class="stat-label">${isZh ? '未实现盈亏' : 'Unrealized P&L'}</div><div class="stat-value ${portfolio.unrealizedPnL >= 0 ? 'positive' : 'negative'}">$${portfolio.unrealizedPnL.toLocaleString()}</div></div>
+            <div class="stat-card"><div class="stat-label">${isZh ? '购买力' : 'Buying Power'}</div><div class="stat-value">$${portfolio.buyingPower.toLocaleString()}</div></div>
+        `;
+
+        const holdingsBody = document.getElementById('holdingsBody');
+        if (holdings.length === 0) {
+            holdingsBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${isZh ? '暂无持仓' : 'No holdings'}</td></tr>`;
+        } else {
+            holdingsBody.innerHTML = holdings.map(h => {
+                const name = isZh ? h.assetInfo.nameZh : h.assetInfo.nameEn;
+                const value = h.amount * h.assetInfo.price;
+                const change = h.assetInfo.change;
+                const changeClass = change >= 0 ? 'positive' : 'negative';
+                const changeSign = change >= 0 ? '+' : '';
+                return `<tr>
+                    <td>${name}</td>
+                    <td>${h.amount}</td>
+                    <td>$${value.toLocaleString()}</td>
+                    <td class="${changeClass}">${changeSign}${change}%</td>
+                </tr>`;
+            }).join('');
+        }
+
+        const watchlistContainer = document.getElementById('watchlistContainer');
+        if (holdings.filter(h => h.asset_id !== 999).length === 0) {
+            watchlistContainer.innerHTML = `<div class="watchlist-item">${isZh ? '暂无自选，请先认购资产' : 'No watchlist, please subscribe assets'}</div>`;
+        } else {
+            watchlistContainer.innerHTML = holdings.filter(h => h.asset_id !== 999).map(h => {
+                const info = h.assetInfo;
+                const changeClass = info.change >= 0 ? 'positive' : 'negative';
+                const changeSign = info.change >= 0 ? '+' : '';
+                return `<div class="watchlist-item">
+                            <div><span class="watchlist-symbol">${info.symbol}</span></div>
+                            <div><span class="watchlist-price">$${info.price.toFixed(2)}</span> <span class="${changeClass}">(${changeSign}${info.change}%)</span></div>
+                        </div>`;
+            }).join('');
+        }
+
+        const newsData = [
+            { titleZh: '曼哈顿写字楼租金收益率超预期', titleEn: 'Manhattan Office rental yield exceeds expectations', date: '2026-06-01' },
+            { titleZh: '波音航空器代币化项目完成第二轮审计', titleEn: 'Boeing aircraft tokenization passes second audit', date: '2026-05-28' },
+            { titleZh: '光伏电站发电量创季度新高', titleEn: 'Solar farm generation hits quarterly record', date: '2026-05-25' },
+            { titleZh: 'AI专利组合新增授权协议', titleEn: 'AI patent portfolio adds new licensing deal', date: '2026-05-22' }
+        ];
+        const newsContainer = document.getElementById('newsContainer');
+        newsContainer.innerHTML = newsData.map(n => {
+            const title = isZh ? n.titleZh : n.titleEn;
+            return `<div class="news-item">
+                        <div class="news-title">${title}</div>
+                        <div class="news-date">${n.date}</div>
+                    </div>`;
+        }).join('');
+
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        if (performanceChart) performanceChart.destroy();
+        const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const mockReturns = [0.5, -0.2, 1.2, 0.8, 2.1, 1.5, 1.2];
+        performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: isZh ? '收益率 (%)' : 'Return (%)',
+                    data: mockReturns,
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,0.05)',
+                    fill: true,
+                    tension: 0.3,
+                    pointBackgroundColor: '#2563eb'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+
+        // 加载完成后显示管理员入口
+        showAdminEntry();
+    }
+
+    document.getElementById('bindWalletBtn').addEventListener('click', async () => {
+        const userId = getUserId();
+        if (!userId) { alert('请先登录'); return; }
+        if (typeof window.ethereum === 'undefined') { alert('请安装 MetaMask'); return; }
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const address = await signer.getAddress();
+            const res = await fetch(`${API_BASE}/api/user/wallet`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, walletAddress: address })
+            });
+            const data = await res.json();
+            if (res.ok) alert('钱包绑定成功');
+            else alert(data.error || '绑定失败');
+        } catch(e) { alert(e.message); }
+    });
+
+    document.getElementById('buyMoreBtn').addEventListener('click', () => {
+        window.location.href = 'marketplace.html';
+    });
+    document.getElementById('orderHistoryBtn').addEventListener('click', async () => {
+        const userId = getUserId();
+        if (!userId) return;
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+        try {
+            const res = await fetch(`${API_BASE}/api/user/${userId}/orders`);
+            const orders = await res.json();
+            if (!orders || orders.length === 0) {
+                alert(isZh ? '暂无订单历史' : 'No order history');
+            } else {
+                const orderText = orders.map(o => {
+                    const assetName = assetsInfo[o.assetId] ? (isZh ? assetsInfo[o.assetId].nameZh : assetsInfo[o.assetId].nameEn) : `Asset ${o.assetId}`;
+                    return `${o.created_at.slice(0,10)}: ${assetName} ${o.amount} 个 × $${o.pricePerToken} = $${o.totalAmount}`;
+                }).join('\n');
+                alert(isZh ? '订单历史：\n' + orderText : 'Order History:\n' + orderText);
+            }
+        } catch(e) {
+            alert(isZh ? '获取订单历史失败' : 'Failed to fetch orders');
+        }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userRole');
+        window.location.href = 'account.html';
+    });
+
+    (async function init() {
+        if (await checkAuth()) {
+            await loadDashboard();
+        }
+    })();
+</script>
+</body>
+</html>

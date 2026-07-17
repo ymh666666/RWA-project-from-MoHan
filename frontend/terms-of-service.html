@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoHan RWA - 服务条款 | Terms of Service</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+        body[data-lang="en"] .lang-zh { display: none !important; }
+        body:not([data-lang="en"]) .lang-en { display: none !important; }
+        
+        header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.92); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+        body.dark .logo {
+            color: #ffffff;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .back-btn:hover { color: var(--primary-blue); }
+        .lang-btn, .theme-toggle {
+            background: var(--bg-light);
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        body.dark .lang-btn,
+        body.dark .theme-toggle {
+            background: #2d3a4f;
+            border-color: #7e8c9e;
+            color: #f0f4fa;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            font-weight: 700;
+        }
+        body.dark .lang-btn:hover,
+        body.dark .theme-toggle:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: #1e2a3a;
+        }
+        
+        main { padding: 60px 0; }
+        .terms-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 40px 48px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        h1 { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; letter-spacing: -0.5px; }
+        .last-updated { color: var(--text-light); font-size: 0.9rem; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); margin: 32px 0 16px; }
+        .risk-box {
+            background: #fff5f0;
+            border-left: 4px solid #e67e22;
+            padding: 20px 28px;
+            margin: 28px 0;
+            border-radius: 0 12px 12px 0;
+        }
+        body.dark .risk-box { background: rgba(230,126,34,0.1); }
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        
+        /* 暗色模式标题对比度优化 */
+        body.dark h1,
+        body.dark h2,
+        body.dark .last-updated,
+        body.dark .risk-box strong {
+            color: #ffffff;
+        }
+        body.dark .risk-box {
+            color: #e2e8f0;
+        }
+        
+        @media (max-width: 768px) { .terms-card { padding: 28px 24px; } h1 { font-size: 1.8rem; } }
+        @media (max-width: 640px) {
+            .container { padding: 0 16px; }
+            .terms-card { padding: 20px 16px; }
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            .risk-box { padding: 12px 16px; }
+            .header-inner { flex-wrap: wrap; gap: 8px; padding: 0 16px; }
+            .back-btn, .lang-btn, .theme-toggle { font-size: 12px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang');
+        if (lang === 'en') document.body.setAttribute('data-lang', 'en');
+        else document.body.setAttribute('data-lang', 'zh');
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function toggleLanguage() {
+        const newLang = document.body.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+        document.body.setAttribute('data-lang', newLang);
+        localStorage.setItem('mohan_lang', newLang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回主页</span><span class="lang-en">Back to Home</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span></button>
+            <button class="lang-btn" onclick="toggleLanguage()">中 / EN</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="terms-card">
+            <h1><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span></h1>
+            <div class="last-updated"><span class="lang-zh">版本 v2.0 | 生效日期：2026年5月26日</span><span class="lang-en">Version 2.0 | Effective: May 26, 2026</span></div>
+            
+            <div class="lang-zh">
+                <p>欢迎使用 MoHan RWA 平台。本条款是您与 MoHan RWA LLC（特拉华州注册）之间具有法律约束力的协议。通过访问或使用本平台，即表示您同意遵守本条款。</p>
+                <h2>1. 资格与投资者认证</h2>
+                <p>如果您是美国人，您必须符合美国证券法 Reg D Rule 506(c) 定义的“合格投资者”标准（年收入≥20万美元或净资产≥100万美元，不含主要住所）。非美国人根据 Reg S 规定，确认不在美国境内进行要约或销售，并遵守12个月分销合规期。您不得是 OFAC 制裁人士或位于受制裁国家/地区。您必须完成平台的 KYC/AML 流程。</p>
+                <h2>2. 平台服务</h2>
+                <p>平台提供 RWA 资产代币化发行、认购、收益分配及协议转让服务。代币代表底层资产（通过特拉华州三层 SPV 持有）的收益权，非股权或债务工具。平台不保证任何特定回报。</p>
+                <div class="risk-box">
+                    <strong>⚠️ 重大风险提示</strong><br>
+                    投资 RWA 代币可能导致部分或全部本金损失。主要风险包括：市场风险、流动性风险（代币无公开交易市场，转让限于合格投资者间协议转让）、监管风险（未来法律变化可能影响代币定性）、技术风险（智能合约漏洞、区块链攻击、私钥丢失）、破产隔离局限性（法院可能穿透 SPV）、估值风险（实际变现价格可能低于估值）。您确认已阅读并理解所有风险。
+                </div>
+                <h2>3. 用户义务</h2>
+                <p>您必须提供真实、准确、完整的信息并及时更新。禁止洗钱、欺诈、操纵市场、传播虚假信息。代币设有 <strong>12个月锁定期</strong>（除非发行文件另有规定），锁定期满后转让仅限在白名单认证的合格投资者之间通过协议方式进行。</p>
+                <h2>4. 费用</h2>
+                <p>发行服务费、年度管理费、交易手续费详见平台费用页面。平台保留调整费用的权利，将提前30天通知。所有费用通过智能合约自动扣除。</p>
+                <h2>5. 责任限制与免责</h2>
+                <p>平台服务“按现状”提供，不提供任何明示或默示保证。在法律允许的最大范围内，平台对任何间接、附带、特殊或惩罚性损害赔偿不承担责任。平台对您的累计赔偿责任不超过过去12个月您向平台支付的服务费总额。</p>
+                <h2>6. 管辖法律与争议解决</h2>
+                <p>本条款受 <strong>特拉华州法律</strong> 管辖，不适用冲突法原则。任何争议应首先友好协商；协商不成，则提交 <strong>特拉华州衡平法院</strong> 或相应联邦法院排他性管辖。双方放弃陪审团审判及集体诉讼权利。诉讼语言为英语。</p>
+                <p><strong>使用本平台即表示您已阅读、理解并同意上述条款，并确认符合合格投资者资格。</strong></p>
+            </div>
+            
+            <div class="lang-en">
+                <p>Welcome to MoHan RWA Platform. These Terms constitute a legally binding agreement between you and MoHan RWA LLC (Delaware). By accessing or using the platform, you agree to be bound by these Terms.</p>
+                <h2>1. Eligibility & Investor Accreditation</h2>
+                <p>If you are a U.S. person, you must qualify as an “accredited investor” under Reg D Rule 506(c) (annual income ≥$200k or net worth ≥$1M excluding primary residence). Non-U.S. persons under Reg S must not offer or sell tokens within the U.S. and must observe a 12-month distribution compliance period. You must not be an OFAC-sanctioned person or located in a sanctioned jurisdiction. You must complete the platform’s KYC/AML process.</p>
+                <h2>2. Platform Services</h2>
+                <p>The platform facilitates tokenization of real-world assets, subscription, distribution of yields, and private transfers. Tokens represent revenue interests in underlying assets held by a Delaware three-tier SPV, not equity or debt instruments. The platform does not guarantee any returns.</p>
+                <div class="risk-box">
+                    <strong>⚠️ Material Risk Disclosure</strong><br>
+                    Investing in RWA tokens may result in partial or total loss of capital. Key risks include: market risk, liquidity risk (no public trading; transfers only among accredited investors via private agreement), regulatory risk (future legal changes may affect token classification), technological risk (smart contract bugs, blockchain attacks, private key loss), bankruptcy remoteness limitations (courts may pierce the SPV), valuation risk (realization price may be below valuation). You acknowledge that you have read and understood all risks.
+                </div>
+                <h2>3. User Obligations</h2>
+                <p>You must provide true, accurate, and complete information and keep it updated. Prohibited activities include money laundering, fraud, market manipulation, and dissemination of false information. Tokens have a <strong>12-month lock-up period</strong> (unless otherwise specified in the offering documents). After lock-up, transfers are only permitted among whitelisted accredited investors via private agreement.</p>
+                <h2>4. Fees</h2>
+                <p>Issuance, management, and trading fees are detailed on the platform’s Fees page. The platform reserves the right to adjust fees with 30 days’ prior notice. All fees are automatically deducted via smart contracts.</p>
+                <h2>5. Limitation of Liability & Disclaimer</h2>
+                <p>Services are provided “as is” without any warranties. To the maximum extent permitted by law, the platform is not liable for any indirect, incidental, special, or punitive damages. The platform’s total liability to you shall not exceed the total service fees you paid to us in the preceding 12 months.</p>
+                <h2>6. Governing Law & Dispute Resolution</h2>
+                <p>These Terms are governed by <strong>Delaware law</strong>, without regard to conflict of laws principles. Any dispute shall be resolved exclusively in the <strong>Court of Chancery of the State of Delaware</strong> or appropriate federal court. The parties waive any right to a jury trial and to participate in a class action. The language of any proceeding shall be English.</p>
+                <p><strong>By using this platform, you acknowledge that you have read, understood, and agree to these Terms, and confirm that you meet the accredited investor eligibility (where applicable).</strong></p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2026 MoHan RWA Platform. <span class="lang-zh">保留所有权利。</span><span class="lang-en">All rights reserved.</span></p>
+        <p><a href="privacy-policy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span></a> | <a href="terms-of-service.html"><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span></a></p>
+    </div>
+</footer>
+</body>
+</html>

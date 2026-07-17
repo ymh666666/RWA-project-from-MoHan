@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoHan - 设置中心 | Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        body[data-lang="en"] .lang-zh { display: none; }
+        body:not([data-lang="en"]) .lang-en { display: none; }
+        
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+        body.dark header { background: rgba(15,23,42,0.95); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        body.dark .logo { color: white; }
+        .back-btn, .lang-btn, .theme-toggle {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .back-btn:hover, .lang-btn:hover, .theme-toggle:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        
+        main { padding: 40px 0; }
+        h1 { font-size: 1.8rem; margin-bottom: 24px; font-weight: 800; }
+        .settings-nav {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+        .settings-nav button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            border-radius: 30px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .settings-nav button.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+        .settings-panel {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 32px;
+            transition: background 0.2s;
+        }
+        .setting-group { margin-bottom: 28px; }
+        .setting-group h3 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            border-left: 3px solid var(--primary-blue);
+            padding-left: 12px;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .setting-label { font-weight: 500; }
+        .setting-desc { font-size: 0.8rem; color: var(--text-light); margin-top: 4px; }
+        select, input {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+        .btn-save {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .btn-save:hover { background: #1e40af; transform: translateY(-1px); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-blue);
+            color: var(--primary-blue);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .btn-outline:hover { background: rgba(37,99,235,0.1); }
+        
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 60px;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        
+        @media (max-width: 768px) {
+            .setting-item { flex-direction: column; align-items: flex-start; }
+            .settings-nav { overflow-x: auto; }
+        }
+        /* 移动端优化 */
+        @media (max-width: 640px) {
+            .header-inner {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+            .back-btn, .theme-toggle, .lang-btn {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            .settings-nav {
+                gap: 8px;
+                overflow-x: auto;
+                padding-bottom: 12px;
+            }
+            .settings-nav button {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+            .settings-panel {
+                padding: 20px;
+            }
+            .setting-group h3 {
+                font-size: 1rem;
+            }
+            .setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .btn-save {
+                width: 100%;
+                padding: 10px;
+            }
+            .btn-outline {
+                padding: 6px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang');
+        if (lang === 'en') document.body.setAttribute('data-lang', 'en');
+        else document.body.setAttribute('data-lang', 'zh');
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function toggleLanguage() {
+        const newLang = document.body.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+        document.body.setAttribute('data-lang', newLang);
+        localStorage.setItem('mohan_lang', newLang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回仪表盘</span><span class="lang-en">Back to Dashboard</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span></button>
+            <button class="lang-btn" onclick="toggleLanguage()">中 / EN</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <h1><span class="lang-zh">设置中心</span><span class="lang-en">Settings</span></h1>
+        <div class="settings-nav">
+            <button data-panel="account" class="active"><i class="fas fa-user"></i> <span class="lang-zh">账户设置</span><span class="lang-en">Account</span></button>
+            <button data-panel="trading"><i class="fas fa-chart-line"></i> <span class="lang-zh">交易设置</span><span class="lang-en">Trading</span></button>
+            <button data-panel="display"><i class="fas fa-palette"></i> <span class="lang-zh">显示设置</span><span class="lang-en">Display</span></button>
+            <button data-panel="notify"><i class="fas fa-bell"></i> <span class="lang-zh">通知和邮件</span><span class="lang-en">Notifications</span></button>
+            <button data-panel="security"><i class="fas fa-shield-alt"></i> <span class="lang-zh">安全</span><span class="lang-en">Security</span></button>
+        </div>
+        <div id="settingsPanels">
+            <!-- 账户设置 -->
+            <div class="settings-panel" id="panel-account">
+                <div class="setting-group"><h3><span class="lang-zh">个人信息</span><span class="lang-en">Profile</span></h3>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">昵称</span><span class="lang-en">Display Name</span></div><div class="setting-desc"><span class="lang-zh">用于社区显示</span><span class="lang-en">Shown in community</span></div></div><input type="text" id="nickname" placeholder="投资者"></div>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">邮箱地址</span><span class="lang-en">Email</span></div></div><input type="email" id="email" placeholder="user@example.com"></div>
+                </div>
+                <div class="setting-group"><h3><span class="lang-zh">偏好货币</span><span class="lang-en">Currency</span></h3><div class="setting-item"><div><div class="setting-label">USD / EUR / CNY</div></div><select id="currency"><option>USD</option><option>EUR</option><option>CNY</option></select></div></div>
+                <button class="btn-save" id="saveAccount"><span class="lang-zh">保存更改</span><span class="lang-en">Save Changes</span></button>
+            </div>
+            <!-- 交易设置 -->
+            <div class="settings-panel" id="panel-trading" style="display:none;">
+                <div class="setting-group"><h3><span class="lang-zh">默认交易对</span><span class="lang-en">Default Trading Pair</span></h3><div class="setting-item"><select id="defaultPair"><option>MHT-RE01/USD</option><option>MHT-AC02/USD</option><option>MHT-SF03/USD</option><option>MHT-IP04/USD</option></select></div></div>
+                <div class="setting-group"><h3><span class="lang-zh">滑点保护</span><span class="lang-en">Slippage Tolerance</span></h3><div class="setting-item"><input type="number" step="0.1" id="slippage" value="0.5"> %</div></div>
+                <div class="setting-group"><h3><span class="lang-zh">订单类型偏好</span><span class="lang-en">Order Type</span></h3><div class="setting-item"><select id="orderType"><option>限价单</option><option>市价单</option></select></div></div>
+                <button class="btn-save" id="saveTrading"><span class="lang-zh">保存交易设置</span><span class="lang-en">Save</span></button>
+            </div>
+            <!-- 显示设置 -->
+            <div class="settings-panel" id="panel-display" style="display:none;">
+                <div class="setting-group"><h3><span class="lang-zh">主题模式</span><span class="lang-en">Theme Mode</span></h3>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">深色/浅色模式</span><span class="lang-en">Dark/Light Mode</span></div></div><button id="switchThemeBtn" class="btn-outline"><span class="lang-zh">切换主题</span><span class="lang-en">Toggle Theme</span></button></div>
+                </div>
+                <div class="setting-group"><h3><span class="lang-zh">K线图表设置</span><span class="lang-en">Chart Settings</span></h3>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">默认时间周期</span><span class="lang-en">Default Timeframe</span></div></div><select id="defaultTimeframe"><option>日线</option><option>周线</option><option>月线</option><option>分时</option></select></div>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">显示均线 MA</span><span class="lang-en">Show Moving Average</span></div></div><input type="checkbox" id="showMA" checked></div>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">显示成交量</span><span class="lang-en">Show Volume</span></div></div><input type="checkbox" id="showVolume" checked></div>
+                </div>
+                <div class="setting-group"><h3><span class="lang-zh">语言偏好</span><span class="lang-en">Language Preference</span></h3>
+                    <div class="setting-item"><div><div class="setting-label"><span class="lang-zh">界面语言</span><span class="lang-en">Interface Language</span></div></div><select id="langSelect"><option value="zh">中文</option><option value="en">English</option></select></div>
+                </div>
+                <button class="btn-save" id="saveDisplay"><span class="lang-zh">保存显示设置</span><span class="lang-en">Save</span></button>
+            </div>
+            <!-- 通知和邮件 -->
+            <div class="settings-panel" id="panel-notify" style="display:none;">
+                <div class="setting-group"><h3><span class="lang-zh">邮件通知</span><span class="lang-en">Email Alerts</span></h3>
+                    <div class="setting-item"><input type="checkbox" id="priceAlert" checked> <span class="lang-zh">资产价格提醒</span><span class="lang-en">Price Alerts</span></div>
+                    <div class="setting-item"><input type="checkbox" id="dividendAlert" checked> <span class="lang-zh">分红到账通知</span><span class="lang-en">Dividend Payout</span></div>
+                    <div class="setting-item"><input type="checkbox" id="systemAlert" checked> <span class="lang-zh">系统公告</span><span class="lang-en">System Announcements</span></div>
+                </div>
+                <div class="setting-group"><h3><span class="lang-zh">推送频率</span><span class="lang-en">Push Frequency</span></h3><select id="pushFrequency"><option>实时</option><option>每日摘要</option><option>每周摘要</option></select></div>
+                <div class="setting-group"><h3><span class="lang-zh">绑定邮箱</span><span class="lang-en">Notification Email</span></h3><input type="email" id="notifyEmail" placeholder="your@email.com"></div>
+                <button class="btn-save" id="saveNotify"><span class="lang-zh">保存通知设置</span><span class="lang-en">Save</span></button>
+            </div>
+            <!-- 安全 -->
+            <div class="settings-panel" id="panel-security" style="display:none;">
+                <div class="setting-group"><h3><span class="lang-zh">修改密码</span><span class="lang-en">Change Password</span></h3>
+                    <div class="setting-item"><input type="password" id="currentPwd" placeholder="<span class='lang-zh'>当前密码</span><span class='lang-en'>Current Password</span>"></div>
+                    <div class="setting-item"><input type="password" id="newPwd" placeholder="<span class='lang-zh'>新密码</span><span class='lang-en'>New Password</span>"></div>
+                    <div class="setting-item"><input type="password" id="confirmPwd" placeholder="<span class='lang-zh'>确认新密码</span><span class='lang-en'>Confirm Password</span>"></div>
+                </div>
+                <div class="setting-group"><h3><span class="lang-zh">双因素认证 (2FA)</span><span class="lang-en">Two-Factor Auth</span></h3><button class="btn-outline" id="enable2faBtn"><span class="lang-zh">启用</span><span class="lang-en">Enable</span></button></div>
+                <div class="setting-group"><h3><span class="lang-zh">会话管理</span><span class="lang-en">Session Management</span></h3><button class="btn-outline" id="logoutOthersBtn"><span class="lang-zh">注销其他设备</span><span class="lang-en">Log out others</span></button></div>
+                <button class="btn-save" id="saveSecurity"><span class="lang-zh">保存安全设置</span><span class="lang-en">Save</span></button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2026 MoHan RWA Platform. <span class="lang-zh">保留所有权利。</span><span class="lang-en">All rights reserved.</span></p>
+    </div>
+</footer>
+
+<script>
+    const btns = document.querySelectorAll('.settings-nav button');
+    const panels = ['account', 'trading', 'display', 'notify', 'security'];
+    btns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const panel = this.getAttribute('data-panel');
+            btns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            panels.forEach(p => {
+                const el = document.getElementById(`panel-${p}`);
+                if (el) el.style.display = (p === panel) ? 'block' : 'none';
+            });
+        });
+    });
+    
+    function loadSettings() {
+        document.getElementById('nickname').value = localStorage.getItem('user_nickname') || '';
+        document.getElementById('email').value = localStorage.getItem('user_email') || '';
+        document.getElementById('currency').value = localStorage.getItem('user_currency') || 'USD';
+        document.getElementById('defaultPair').value = localStorage.getItem('trading_pair') || 'MHT-RE01/USD';
+        document.getElementById('slippage').value = localStorage.getItem('slippage_tolerance') || '0.5';
+        document.getElementById('orderType').value = localStorage.getItem('order_type') || '限价单';
+        document.getElementById('defaultTimeframe').value = localStorage.getItem('chart_timeframe') || '日线';
+        document.getElementById('showMA').checked = localStorage.getItem('chart_show_ma') !== 'false';
+        document.getElementById('showVolume').checked = localStorage.getItem('chart_show_volume') !== 'false';
+        document.getElementById('langSelect').value = localStorage.getItem('mohan_lang') || 'zh';
+        document.getElementById('priceAlert').checked = localStorage.getItem('alert_price') !== 'false';
+        document.getElementById('dividendAlert').checked = localStorage.getItem('alert_dividend') !== 'false';
+        document.getElementById('systemAlert').checked = localStorage.getItem('alert_system') !== 'false';
+        document.getElementById('pushFrequency').value = localStorage.getItem('push_frequency') || '实时';
+        document.getElementById('notifyEmail').value = localStorage.getItem('notify_email') || '';
+    }
+    
+    document.getElementById('saveAccount').addEventListener('click', () => {
+        localStorage.setItem('user_nickname', document.getElementById('nickname').value);
+        localStorage.setItem('user_email', document.getElementById('email').value);
+        localStorage.setItem('user_currency', document.getElementById('currency').value);
+        alert(document.body.getAttribute('data-lang') === 'zh' ? '账户设置已保存' : 'Account settings saved');
+    });
+    
+    document.getElementById('saveTrading').addEventListener('click', () => {
+        localStorage.setItem('trading_pair', document.getElementById('defaultPair').value);
+        localStorage.setItem('slippage_tolerance', document.getElementById('slippage').value);
+        localStorage.setItem('order_type', document.getElementById('orderType').value);
+        alert(document.body.getAttribute('data-lang') === 'zh' ? '交易设置已保存' : 'Trading settings saved');
+    });
+    
+    document.getElementById('saveDisplay').addEventListener('click', () => {
+        localStorage.setItem('chart_timeframe', document.getElementById('defaultTimeframe').value);
+        localStorage.setItem('chart_show_ma', document.getElementById('showMA').checked);
+        localStorage.setItem('chart_show_volume', document.getElementById('showVolume').checked);
+        const newLang = document.getElementById('langSelect').value;
+        if (newLang !== localStorage.getItem('mohan_lang')) {
+            localStorage.setItem('mohan_lang', newLang);
+            alert(document.body.getAttribute('data-lang') === 'zh' ? '语言已更改，页面将刷新' : 'Language changed, page will reload');
+            location.reload();
+        } else {
+            alert(document.body.getAttribute('data-lang') === 'zh' ? '显示设置已保存' : 'Display settings saved');
+        }
+    });
+    
+    document.getElementById('saveNotify').addEventListener('click', () => {
+        localStorage.setItem('alert_price', document.getElementById('priceAlert').checked);
+        localStorage.setItem('alert_dividend', document.getElementById('dividendAlert').checked);
+        localStorage.setItem('alert_system', document.getElementById('systemAlert').checked);
+        localStorage.setItem('push_frequency', document.getElementById('pushFrequency').value);
+        localStorage.setItem('notify_email', document.getElementById('notifyEmail').value);
+        alert(document.body.getAttribute('data-lang') === 'zh' ? '通知设置已保存' : 'Notification settings saved');
+    });
+    
+    document.getElementById('saveSecurity').addEventListener('click', () => {
+        const current = document.getElementById('currentPwd').value;
+        const newp = document.getElementById('newPwd').value;
+        const confirm = document.getElementById('confirmPwd').value;
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+        if (newp && newp === confirm) {
+            localStorage.setItem('user_password_hash', 'demo_hash');
+            alert(isZh ? '密码已修改（演示）' : 'Password changed (demo)');
+            document.getElementById('currentPwd').value = '';
+            document.getElementById('newPwd').value = '';
+            document.getElementById('confirmPwd').value = '';
+        } else if (newp) {
+            alert(isZh ? '新密码与确认密码不一致' : 'New password and confirmation do not match');
+        } else {
+            alert(isZh ? '未修改密码' : 'No password change');
+        }
+    });
+    
+    document.getElementById('switchThemeBtn').addEventListener('click', () => {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+        location.reload();
+    });
+    
+    document.getElementById('enable2faBtn').addEventListener('click', () => {
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+        alert(isZh ? '请扫描二维码绑定 Google Authenticator（演示）' : 'Please scan QR code to bind Google Authenticator (demo)');
+    });
+    document.getElementById('logoutOthersBtn').addEventListener('click', () => {
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+        alert(isZh ? '已注销其他设备登录' : 'Logged out other devices');
+    });
+    
+    loadSettings();
+</script>
+</body>
+</html>

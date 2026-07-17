@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>MoHan - 账户中心 | Account Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== 样式（与原先完全一致） ========== */
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --accent-cyan: #06b6d4;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #cbd5e1;
+            --border-color: #334155;
+            --title-color: #ffffff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+        body[data-lang="en"] .lang-zh { display: none !important; }
+        body:not([data-lang="en"]) .lang-en { display: none !important; }
+        
+        header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.92); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+        body.dark .logo {
+            color: #ffffff;
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .back-btn:hover { color: var(--primary-blue); }
+        .lang-btn, .theme-toggle {
+            background: var(--bg-light);
+            border: 1px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        body.dark .lang-btn,
+        body.dark .theme-toggle {
+            background: #2d3a4f;
+            border-color: #7e8c9e;
+            color: #f0f4fa;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            font-weight: 700;
+        }
+        body.dark .lang-btn:hover,
+        body.dark .theme-toggle:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: #1e2a3a;
+        }
+        
+        main { padding: 60px 0; min-height: 70vh; }
+        .account-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 40px 48px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 28px;
+            letter-spacing: -0.5px;
+            text-align: center;
+        }
+        body.dark h1 {
+            color: var(--title-color);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--bg-light);
+            color: var(--text-main);
+            transition: 0.2s;
+        }
+        body.dark .form-group input {
+            color: #f1f5f9;
+            background: #0f172a;
+        }
+        .form-group input:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+        .btn-primary { background: var(--primary-blue); color: white; }
+        .btn-primary:hover { background: #1e40af; transform: translateY(-2px); }
+        .switch-link {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--primary-blue);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .switch-link:hover { text-decoration: underline; }
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #f59e0b;
+        }
+        body.dark .message {
+            color: #fbbf24;
+        }
+        
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        
+        @media (max-width: 768px) {
+            .account-card { padding: 28px 24px; margin: 0 16px; }
+            h1 { font-size: 1.6rem; }
+        }
+        @media (max-width: 640px) {
+            .header-inner {
+                padding: 0 16px;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .back-btn { font-size: 14px; }
+            .lang-btn, .theme-toggle { padding: 4px 10px; font-size: 12px; }
+            main { padding: 40px 0; }
+            .account-card { padding: 20px 16px; }
+            h1 { font-size: 1.5rem; margin-bottom: 20px; }
+            .form-group input { padding: 10px 14px; font-size: 14px; }
+            .btn { padding: 10px; font-size: 14px; }
+            .switch-link { font-size: 0.8rem; margin-top: 16px; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang');
+        if (lang === 'en') document.body.setAttribute('data-lang', 'en');
+        else document.body.setAttribute('data-lang', 'zh');
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function toggleLanguage() {
+        const newLang = document.body.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+        document.body.setAttribute('data-lang', newLang);
+        localStorage.setItem('mohan_lang', newLang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回主页</span><span class="lang-en">Back to Home</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span></button>
+            <button class="lang-btn" onclick="toggleLanguage()">中 / EN</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="account-card" id="accountCard"></div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>© 2026 MoHan RWA Platform. <span class="lang-zh">保留所有权利。</span><span class="lang-en">All rights reserved.</span></p>
+        <p><a href="privacy-policy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span></a> | <a href="terms-of-service.html"><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span></a></p>
+    </div>
+</footer>
+
+<script>
+    // ==================== 配置 ====================
+    const API_BASE = 'http://localhost:3001';
+    let currentView = 'login';
+    let timer = null;
+
+    function getUserId() { return localStorage.getItem('userId'); }
+    function getUserRole() { return localStorage.getItem('userRole') || 'user'; }
+
+    // 获取 URL 参数中的 redirect
+    function getRedirectUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('redirect');
+    }
+
+    // 检查是否已登录
+    async function checkLoggedIn() {
+        const userId = getUserId();
+        if (userId) {
+            // 若已登录，跳转到 dashboard 或 redirect 指定的页面
+            const redirect = getRedirectUrl();
+            window.location.href = redirect || 'dashboard.html';
+        }
+    }
+
+    // ==================== 注册 ====================
+    async function register(email, password, name) {
+        try {
+            const res = await fetch(`${API_BASE}/api/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, name })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert('注册成功！请登录');
+                currentView = 'login';
+                renderCurrentView();
+            } else {
+                alert(data.error || '注册失败');
+            }
+        } catch(err) {
+            alert('无法连接后端服务');
+        }
+    }
+
+    // ==================== 登录（核心修改：保存 role） ====================
+    async function login(email, password) {
+        try {
+            const res = await fetch(`${API_BASE}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.userId) {
+                // 保存 userId 和 role
+                localStorage.setItem('userId', data.userId);
+                localStorage.setItem('userRole', data.role || 'user');
+                alert('登录成功！');
+                // 跳转到 redirect 指定的页面，或默认 dashboard
+                const redirect = getRedirectUrl();
+                window.location.href = redirect || 'dashboard.html';
+            } else {
+                alert(data.error || '登录失败');
+            }
+        } catch(err) {
+            alert('无法连接后端服务');
+        }
+    }
+
+    // ==================== 渲染视图 ====================
+    function renderCurrentView() {
+        const container = document.getElementById('accountCard');
+        const isZh = document.body.getAttribute('data-lang') === 'zh';
+        
+        if (currentView === 'login') {
+            container.innerHTML = `
+                <h1>${isZh ? '登录账户' : 'Login'}</h1>
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="${isZh ? '电子邮箱' : 'Email'}">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPwd" placeholder="${isZh ? '密码' : 'Password'}">
+                </div>
+                <button class="btn btn-primary" id="loginBtn">${isZh ? '登录' : 'Login'}</button>
+                <div class="switch-link" id="showRegisterLink">${isZh ? '没有账号？立即注册' : 'No account? Sign up'}</div>
+                <div id="loginMessage" class="message"></div>
+            `;
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPwd').value;
+                if (!email || !password) {
+                    document.getElementById('loginMessage').innerText = isZh ? '请填写邮箱和密码' : 'Please fill in email and password';
+                    return;
+                }
+                login(email, password);
+            });
+            document.getElementById('showRegisterLink').addEventListener('click', () => {
+                currentView = 'register';
+                renderCurrentView();
+            });
+        } else {
+            container.innerHTML = `
+                <h1>${isZh ? '注册新账户' : 'Sign Up'}</h1>
+                <div class="form-group">
+                    <input type="text" id="regName" placeholder="${isZh ? '昵称（可选）' : 'Name (Optional)'}">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="regEmail" placeholder="${isZh ? '电子邮箱' : 'Email'}">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="regPwd" placeholder="${isZh ? '密码' : 'Password'}">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="regConfirmPwd" placeholder="${isZh ? '确认密码' : 'Confirm Password'}">
+                </div>
+                <button class="btn btn-primary" id="registerBtn">${isZh ? '注册' : 'Sign Up'}</button>
+                <div class="switch-link" id="backToLoginLink">← ${isZh ? '返回登录' : 'Back to Login'}</div>
+                <div id="registerMessage" class="message"></div>
+            `;
+            document.getElementById('registerBtn').addEventListener('click', () => {
+                const name = document.getElementById('regName').value;
+                const email = document.getElementById('regEmail').value;
+                const password = document.getElementById('regPwd').value;
+                const confirmPwd = document.getElementById('regConfirmPwd').value;
+                if (!email || !password || !confirmPwd) {
+                    document.getElementById('registerMessage').innerText = isZh ? '请填写所有必填字段' : 'Please fill in all required fields';
+                    return;
+                }
+                if (password !== confirmPwd) {
+                    document.getElementById('registerMessage').innerText = isZh ? '两次输入的密码不一致' : 'Passwords do not match';
+                    return;
+                }
+                register(email, password, name);
+            });
+            document.getElementById('backToLoginLink').addEventListener('click', () => {
+                currentView = 'login';
+                renderCurrentView();
+            });
+        }
+    }
+
+    // ==================== 初始化 ====================
+    (async function init() {
+        // 如果已登录，跳转到目标页面
+        const userId = getUserId();
+        if (userId) {
+            const redirect = getRedirectUrl();
+            window.location.href = redirect || 'dashboard.html';
+            return;
+        }
+        currentView = 'login';
+        renderCurrentView();
+    })();
+</script>
+</body>
+</html>

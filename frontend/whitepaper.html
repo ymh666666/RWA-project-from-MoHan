@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoHan - 项目白皮书 | Whitepaper | ورقة بيضاء</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ========== 全局变量 & 重置 ========== */
+        :root {
+            --primary-dark: #0f172a;
+            --primary-blue: #2563eb;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        body.dark {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #e2e8f0;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-sans);
+            color: var(--text-main);
+            background: var(--bg-light);
+            line-height: 1.7;
+            font-size: 16px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+        /* 语言可见性 */
+        body[data-lang="zh"] .lang-zh { display: block; }
+        body[data-lang="zh"] .lang-en, body[data-lang="zh"] .lang-ar { display: none; }
+        body[data-lang="en"] .lang-en { display: block; }
+        body[data-lang="en"] .lang-zh, body[data-lang="en"] .lang-ar { display: none; }
+        body[data-lang="ar"] .lang-ar { display: block; }
+        body[data-lang="ar"] .lang-zh, body[data-lang="ar"] .lang-en { display: none; }
+        body[data-lang="ar"] { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body[data-lang="ar"] .container { text-align: right; }
+        body[data-lang="ar"] .header-inner, body[data-lang="ar"] .footer-links { justify-content: space-between; flex-direction: row-reverse; }
+        body[data-lang="ar"] .back-btn i { margin-left: 8px; margin-right: 0; transform: rotate(180deg); }
+
+        /* 头部样式（统一按钮） */
+        header {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        body.dark header { background: rgba(15,23,42,0.92); }
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            min-height: 70px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        body.dark .logo { color: #ffffff; }
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .back-btn:hover { color: var(--primary-blue); }
+
+        /* 统一按钮样式（主题切换 + 语言触发器） */
+        .theme-toggle, .lang-selector .lang-trigger {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        body.dark .theme-toggle, body.dark .lang-selector .lang-trigger {
+            background: #2d3a4f;
+            border-color: #7e8c9e;
+            color: #f0f4fa;
+        }
+        .theme-toggle:hover, .lang-selector .lang-trigger:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* 语言下拉菜单 */
+        .lang-selector {
+            position: relative;
+            display: inline-block;
+        }
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+            min-width: 130px;
+            padding: 8px 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 200;
+            border: 1px solid var(--border-color);
+            margin-top: 8px;
+        }
+        body[data-lang="ar"] .lang-dropdown { right: auto; left: 0; }
+        .lang-selector:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+        }
+        .lang-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 20px;
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .lang-dropdown button:hover {
+            background: #f1f5f9;
+            color: var(--primary-blue);
+        }
+        body.dark .lang-dropdown button:hover {
+            background: #334155;
+        }
+
+        /* 主体卡片 */
+        main { padding: 60px 0; }
+        .whitepaper-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            padding: 40px 48px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+        h1 { font-size: 2.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 16px; letter-spacing: -0.5px; }
+        .version { color: var(--text-light); font-size: 0.9rem; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        h2 { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); margin: 32px 0 16px; }
+        h3 { font-size: 1.2rem; font-weight: 600; margin: 24px 0 12px; color: var(--primary-dark); }
+        p, li { margin-bottom: 0.8rem; }
+        ul, ol { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+        body[data-lang="ar"] ul, body[data-lang="ar"] ol { padding-right: 1.5rem; padding-left: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; vertical-align: top; }
+        th { background: var(--bg-light); font-weight: 700; }
+        .risk-note { background: #fffaf0; border-left: 4px solid #ed8936; padding: 16px 24px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+        body.dark .risk-note { background: rgba(237,137,54,0.1); }
+        footer {
+            background: var(--primary-dark);
+            color: #94a3b8;
+            padding: 40px 0 24px;
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+        }
+        footer a { color: #94a3b8; text-decoration: none; }
+        footer a:hover { color: white; }
+        .footer-links { display: flex; justify-content: center; gap: 24px; margin-top: 16px; }
+
+        /* 暗色/响应式 */
+        body.dark h1, body.dark h2, body.dark h3, body.dark .version, body.dark .risk-note strong, body.dark th { color: #ffffff; }
+        body.dark .risk-note { color: #e2e8f0; }
+        @media (max-width: 768px) {
+            .whitepaper-card { padding: 28px 24px; }
+            h1 { font-size: 1.8rem; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 8px; }
+        }
+        @media (max-width: 640px) {
+            .container { padding: 0 16px; }
+            .whitepaper-card { padding: 20px 16px; }
+            h1 { font-size: 1.6rem; }
+            h2 { font-size: 1.3rem; }
+            .header-inner { flex-direction: column; text-align: center; }
+            .back-btn { justify-content: center; }
+            .lang-dropdown { right: 0; left: auto; }
+        }
+    </style>
+</head>
+<body>
+<script>
+    (function() {
+        let theme = localStorage.getItem('mohan_theme');
+        if (theme === 'dark') document.body.classList.add('dark');
+        let lang = localStorage.getItem('mohan_lang') || 'zh';
+        document.body.setAttribute('data-lang', lang);
+    })();
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('mohan_theme', isDark ? 'dark' : 'light');
+    }
+    function setLanguage(lang) {
+        document.body.setAttribute('data-lang', lang);
+        localStorage.setItem('mohan_lang', lang);
+        location.reload();
+    }
+</script>
+
+<header>
+    <div class="container header-inner">
+        <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> <span class="lang-zh">返回主页</span><span class="lang-en">Back to Home</span><span class="lang-ar">العودة إلى الرئيسية</span></a>
+        <a href="#" class="logo">MoHan</a>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> <span class="lang-zh">暗色</span><span class="lang-en">Dark</span><span class="lang-ar">داكن</span></button>
+            <div class="lang-selector">
+                <button class="lang-trigger"><i class="fas fa-globe"></i> <span class="lang-zh">语言</span><span class="lang-en">Lang</span><span class="lang-ar">اللغة</span></button>
+                <div class="lang-dropdown">
+                    <button onclick="setLanguage('zh')">中文</button>
+                    <button onclick="setLanguage('en')">English</button>
+                    <button onclick="setLanguage('ar')">العربية</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="whitepaper-card">
+            <h1>
+                <span class="lang-zh">MoHan RWA 平台白皮书 v2.0</span>
+                <span class="lang-en">MoHan RWA Whitepaper v2.0</span>
+                <span class="lang-ar">الورقة البيضاء لمنصة MoHan RWA v2.0</span>
+            </h1>
+            <div class="version">
+                <span class="lang-zh">版本 2.0 | 发布日期：2026 年 6 月 | 底层公链：XRP Ledger | 监管框架：迪拜 VARA</span>
+                <span class="lang-en">Version 2.0 | June 2026 | Blockchain: XRP Ledger | Regulation: Dubai VARA</span>
+                <span class="lang-ar">الإصدار 2.0 | يونيو 2026 | السلسلة الأساسية: XRP Ledger | الإطار التنظيمي: هيئة دبي VARA</span>
+            </div>
+
+            <!-- 中文内容（完整保留） -->
+            <div class="lang-zh">
+                <h2>1. 执行摘要</h2>
+                <p>MoHan RWA Platform 是一个面向机构级合规、基于 XRP Ledger 构建的现实世界资产（RWA）代币化全栈基础设施平台。平台初期采用「NOC → DLT技术服务 → VARA完整牌照 → RWA平台」的四步战略切入迪拜市场，致力于成为 MENA 地区领先的 RWA 基础设施服务商。</p>
+                <p><strong>核心数据：</strong> GCC 地区 RWA 代币化潜在市场价值近 5000 亿美元（2030 年），链上 RWA 市场已从 2023 年初约 11 亿美元飙升至 2026 年 1 月近 200 亿美元，迪拜 VARA 已向超过 85 家实体发放许可证。</p>
+
+                <h2>2. 项目愿景与使命</h2>
+                <p><strong>愿景：</strong> 成为全球最具影响力和合规性的 RWA 基础设施平台——让资产流动无国界，让价值创造更公平。</p>
+                <p><strong>使命：</strong> 为资产发行方提供标准化代币化工具；为全球合规投资者提供高价值资产准入渠道；为 RWA 生态提供透明基础设施服务；以迪拜为起点输出最高监管标准的解决方案。</p>
+
+                <h2>3. 市场分析</h2>
+                <p>全球链上 RWA 市场（不含稳定币）从 2023 年初约 11 亿美元增长至 2026 年 1 月近 200 亿美元，预计 2026 年底突破 1000 亿美元。GCC 地区通过 RWA 代币化到 2030 年可解锁近 5000 亿美元价值，迪拜房地产代币化目标到 2033 年实现 160 亿美元资产上链。</p>
+                <p>迪拜的战略优势：VARA 全球首个独立虚拟资产监管机构，ARVA 类别提供最清晰 RWA 合规路径；XRPL 已有成功案例（2.8 亿美元钻石代币化、DLD 房地产代币化）；机构资本主动聚集。</p>
+
+                <h2>4. 技术架构</h2>
+                <h3>结算与资产层（Settlement & Asset Layer）</h3>
+                <p>底层公链：XRP Ledger（XRPL），内置 DEX、托管与合规工具，资产代币标准符合 VARA ARVA 要求。</p>
+                <h3>合规与准入层（Compliance & Access Layer）</h3>
+                <p>去中心化身份（DID）+ 可验证凭证（VC），许可型流动性池，自动合规报告，AML/KYC 集成。</p>
+                <h3>应用与接口层（Application & Interface Layer）</h3>
+                <p>RWA 资产市场（MVP 已上线）、投资者仪表盘、资产发行门户、开放 API 接口。</p>
+
+                <h2>5. 产品功能（已完成 MVP）</h2>
+                <p>主页、资产市场、资产详情、用户仪表盘、账户中心、设置页、合规中心、白皮书页、隐私政策、服务条款 —— 共 10 个页面，支持双语、暗色主题。</p>
+
+                <h2>6. 合规与法律架构</h2>
+                <p><strong>四步合规路线：</strong></p>
+                <ul>
+                    <li>第一步：向 VARA 申请无异议函（NOC），业务范围：DLT 技术咨询与开发（成本 $3k-8k）</li>
+                    <li>第二步：凭 NOC 合法开展技术服务，积累运营记录和资金（第 4-8 个月）</li>
+                    <li>第三步：提交完整 VARA 申请（五部分法律意见书、IDQ、AML 手册等），成本 $40k-80k</li>
+                    <li>第四步：获得 VASP 牌照，开放 RWA 资产发行和二级市场交易（年度监管费约 $20k）</li>
+                </ul>
+                <p><strong>资产结构（SPV 架构）：</strong> 每个代币化资产通过特拉华州三层 SPV 持有，实现破产隔离和合规的收益权分离。</p>
+                <p><strong>VARA ARVA 合规要求：</strong> 强制性五部分法律意见书、定制化风险披露、白皮书完全公开、投资者适当性验证（KYC/AML + 合格投资者认证）、12 个月锁定期。</p>
+
+                <h2>7. 代币经济模型（MHT）</h2>
+                <p><strong>基本参数：</strong> 代币名称 MoHan Token（MHT），总供应量 1,000,000,000 枚（固定上限），底层公链 XRPL，治理代币 + 价值捕获代币。</p>
+                <p><strong>分配方案：</strong> 生态系统激励 40%、核心团队及开发者 20%（锁定 3 年）、基金会财库 20%、战略私募与公募 15%、空投与社区激励 5%。</p>
+                <p><strong>MHT 核心功能：</strong> 治理权、价值捕获（回购销毁/质押分润）、质押激励、合规门槛。</p>
+
+                <h2>8. 业务模式与收入结构</h2>
+                <p>收入来源：DLT 技术服务费（$3k-100k/项目）、资产发行服务费（发行额 1-3%）、年度管理费（资产净值 0.5-1%/年）、交易手续费（0.1-0.3%）、数据与 API 服务费（$500-5k/月）。</p>
+                <p>首年财务预测：前 8 个月支出约 $50k-84k，第 9-12 月需 VARA 申请费 $40k-80k，由服务收入和种子融资覆盖。</p>
+
+                <h2>9. 发展路线图</h2>
+                <ul>
+                    <li><strong>阶段0（2026 Q2-Q3）：</strong> 公司注册准备 + BD 启动 + 平台完善</li>
+                    <li><strong>阶段1（2026 Q3）：</strong> DMCC 注册 + VARA NOC 获批 + 银行开户</li>
+                    <li><strong>阶段2（2026 Q3-Q4）：</strong> DLT 服务收入 + 人脉积累（目标 3 个客户，收入 $15k+）</li>
+                    <li><strong>阶段3（2026 Q4-2027 Q1）：</strong> VARA 完整申请提交 + 原则性批准</li>
+                    <li><strong>阶段4（2027 Q1-Q2）：</strong> 主网上线 + 种子轮融资 $50 万 + VASP 牌照</li>
+                    <li><strong>阶段5（2027 Q3 起）：</strong> 全球化扩张，交易额突破 $100 万</li>
+                </ul>
+
+                <h2>10. 团队</h2>
+                <p><strong>杨墨涵（Yang Mohan）—— 创始人兼全栈开发者</strong>：独立完成前端 10 个页面、后端 API 及基础架构，借助 AI 工具 1 周完成完整 MVP。后续将招募法律合规顾问、BD 合伙人、区块链工程师、市场运营等核心岗位。</p>
+
+                <h2>11. 风险因素</h2>
+                <p>监管风险、市场风险、技术风险、运营风险、资产风险、流动性风险、竞争风险。详细缓解措施参见平台风险披露声明。</p>
+                <div class="risk-note"><strong>⚠️ 重要提示</strong><br>本白皮书仅供信息参考，不构成任何投资建议。代币价值可能波动，您可能损失部分或全部投资。投资前请仔细阅读完整风险披露。</div>
+
+                <p style="margin-top: 40px; font-size: 0.8rem;">© 2026 MoHan RWA Platform | 保留所有权利。<br>联系方式：yangmohan945@163.com | 注册地：DMCC 自由区，迪拜，阿联酋（筹备中）</p>
+            </div>
+
+            <!-- 英文内容（完整保留） -->
+            <div class="lang-en">
+                <h2>1. Executive Summary</h2>
+                <p>MoHan RWA Platform is an institution-grade, XRP Ledger-based full-stack infrastructure platform for real-world asset tokenization. The platform adopts a four-step strategy (NOC → DLT Services → VARA Full License → RWA Platform) to enter the Dubai market, aiming to become a leading RWA infrastructure provider in the MENA region.</p>
+                <p><strong>Key Data:</strong> GCC RWA tokenization potential ~$500 billion by 2030; on-chain RWA market grew from ~$1.1B (early 2023) to ~$20B (Jan 2026); Dubai VARA has licensed over 85 entities.</p>
+
+                <h2>2. Vision & Mission</h2>
+                <p><strong>Vision:</strong> To become the world's most impactful and compliant RWA infrastructure platform — making asset flow borderless and value creation fairer.</p>
+                <p><strong>Mission:</strong> Provide standardized tokenization tools for issuers; offer access to premium assets for global accredited investors; build transparent infrastructure for the RWA ecosystem; export highest regulatory standard solutions from Dubai.</p>
+
+                <h2>3. Market Analysis</h2>
+                <p>The global on-chain RWA market (excluding stablecoins) is projected to exceed $100 billion by end of 2026, and the broader tokenized market (including DePIN) could reach $3.5 trillion by 2028. GCC region can unlock nearly $500 billion via RWA tokenization by 2030. Dubai's real estate tokenization target: $16 billion assets on-chain by 2033.</p>
+                <p>Dubai’s competitive advantages: VARA as the world’s first dedicated virtual asset regulator; ARVA category provides the clearest RWA compliance path; XRPL proven through $280M diamond tokenization and DLD real estate projects.</p>
+
+                <h2>4. Technical Architecture</h2>
+                <h3>Settlement & Asset Layer</h3>
+                <p>XRPL with built-in DEX, custody and compliance tools; token standards aligned with VARA ARVA.</p>
+                <h3>Compliance & Access Layer</h3>
+                <p>DID + verifiable credentials, permissioned liquidity pools, automated regulatory reporting, AML/KYC integration.</p>
+                <h3>Application & Interface Layer</h3>
+                <p>RWA marketplace (MVP live), investor dashboard, asset issuance portal, open API.</p>
+
+                <h2>5. Product Features (MVP Completed)</h2>
+                <p>Home, Marketplace, Asset Detail, Dashboard, Account Center, Settings, Legal Compliance, Whitepaper, Privacy Policy, Terms of Service – 10 pages with bilingual support and dark mode.</p>
+
+                <h2>6. Compliance & Legal Framework</h2>
+                <p><strong>Four-Step Compliance Roadmap:</strong></p>
+                <ul>
+                    <li>Step 1: Apply for VARA No-Objection Certificate (NOC) for DLT tech consulting (cost $3k-8k)</li>
+                    <li>Step 2: Operate DLT services under NOC, build track record (months 4-8)</li>
+                    <li>Step 3: Submit full VARA application (5-part legal opinion, IDQ, AML manual) – cost $40k-80k</li>
+                    <li>Step 4: Obtain VASP license, launch RWA issuance and secondary trading (annual supervision fee ~$20k)</li>
+                </ul>
+                <p><strong>Asset Structure (SPV):</strong> Each tokenized asset is held by a Delaware three-tier SPV, achieving bankruptcy remoteness and compliant revenue rights separation.</p>
+                <p><strong>VARA ARVA Requirements:</strong> Mandatory 5-part legal opinion, customized risk disclosure, fully public whitepaper, investor suitability (KYC/AML + accredited investor), 12-month lock-up.</p>
+
+                <h2>7. Tokenomics (MHT)</h2>
+                <p><strong>Parameters:</strong> MoHan Token (MHT), total supply 1,000,000,000 (fixed), XRPL, governance + value accrual token.</p>
+                <p><strong>Allocation:</strong> Ecosystem incentives 40%, Team & developers 20% (3-year lock), Foundation treasury 20%, Strategic private/public sale 15%, Airdrop & community 5%.</p>
+                <p><strong>MHT Utilities:</strong> Governance, value capture (buyback & burn or staking rewards), staking incentives, compliance threshold.</p>
+
+                <h2>8. Business Model & Revenue Streams</h2>
+                <p>Revenue sources: DLT technical service fees ($3k-100k/project), issuance service fee (1-3% of offering), annual management fee (0.5-1% of AUM), trading fee (0.1-0.3%), data & API fees ($500-5k/month).</p>
+                <p>First-year financial forecast: ~$50k-84k expenses in first 8 months; VARA full application $40k-80k in months 9-12 to be covered by service revenue and seed funding.</p>
+
+                <h2>9. Roadmap</h2>
+                <ul>
+                    <li><strong>Phase 0 (2026 Q2-Q3):</strong> Incorporation preparation + BD start + platform polish</li>
+                    <li><strong>Phase 1 (2026 Q3):</strong> DMCC registration + VARA NOC + bank account</li>
+                    <li><strong>Phase 2 (2026 Q3-Q4):</strong> DLT service revenue + network building (target 3 clients, $15k+ revenue)</li>
+                    <li><strong>Phase 3 (2026 Q4-2027 Q1):</strong> VARA full application submission + In-Principle Approval</li>
+                    <li><strong>Phase 4 (2027 Q1-Q2):</strong> Mainnet launch + seed funding ($500k) + VASP license</li>
+                    <li><strong>Phase 5 (2027 Q3+):</strong> Global expansion, trading volume exceed $1M</li>
+                </ul>
+
+                <h2>10. Team</h2>
+                <p><strong>Yang Mohan – Founder & Full-Stack Developer</strong>: Independently built 10 front-end pages, back-end API and infrastructure, completed full MVP in 1 week with AI assistance. Will recruit legal/compliance advisor, BD partner, blockchain engineer, marketing operations.</p>
+
+                <h2>11. Risk Factors</h2>
+                <p>Regulatory, market, technology, operational, asset, liquidity, and competition risks. See platform risk disclosure for mitigation measures.</p>
+                <div class="risk-note"><strong>⚠️ Important Notice</strong><br>This whitepaper is for informational purposes only and does not constitute investment advice. Token value may fluctuate, and you may lose part or all of your investment. Please read the full risk disclosure before investing.</div>
+
+                <p style="margin-top: 40px; font-size: 0.8rem;">© 2026 MoHan RWA Platform | All rights reserved.<br>Contact: yangmohan945@163.com | Registered Office: DMCC Free Zone, Dubai, UAE (in preparation)</p>
+            </div>
+
+            <!-- 阿拉伯语内容（完整保留） -->
+            <div class="lang-ar">
+                <h2>1. ملخص تنفيذي</h2>
+                <p>منصة MoHan RWA هي بنية تحتية شاملة لترميز الأصول الواقعية (RWA) مبنية على XRP Ledger وتستهدف الامتثال المؤسسي. تتبنى المنصة استراتيجية من أربع خطوات (NOC ← خدمات DLT ← ترخيص VARA الكامل ← منصة RWA) لدخول سوق دبي، وتسعى لأن تكون مزودًا رائدًا للبنية التحتية لـ RWA في منطقة الشرق الأوسط وشمال إفريقيا.</p>
+                <p><strong>بيانات أساسية:</strong> القيمة السوقية المحتملة لترميز RWA في دول الخليج تقارب 500 مليار دولار بحلول 2030، ونمو سوق RWA على السلسلة من ~1.1 مليار دولار (أوائل 2023) إلى ~20 مليار دولار (يناير 2026)، ورخصت VARA أكثر من 85 كيانًا.</p>
+
+                <h2>2. الرؤية والرسالة</h2>
+                <p><strong>الرؤية:</strong> أن نصبح منصة البنية التحتية الأكثر تأثيرًا والتزامًا بالامتثال لـ RWA عالميًا – لجعل تدفق الأصول بلا حدود وجعل خلق القيمة أكثر عدلاً.</p>
+                <p><strong>الرسالة:</strong> توفير أدوات ترميز موحدة لمصدري الأصول؛ وقنوات وصول إلى أصول عالية القيمة للمستثمرين المؤهلين عالميًا؛ وبناء خدمات بنية تحتية شفافة لنظام RWA البيئي؛ وتصدير حلول بأعلى المعايير التنظيمية انطلاقًا من دبي.</p>
+
+                <h2>3. تحليل السوق</h2>
+                <p>من المتوقع أن يتجاوز سوق RWA العالمي على السلسلة 100 مليار دولار بنهاية 2026، ويمكن أن يصل سوق الترميز الأوسع (بما في ذلك DePIN) إلى 3.5 تريليون دولار بحلول 2028. يمكن لمنطقة الخليج أن تطلق ما يقرب من 500 مليار دولار عبر ترميز RWA بحلول 2030، وتهدف دبي إلى ترميز أصول عقارية بقيمة 16 مليار دولار بحلول 2033.</p>
+                <p>المزايا الاستراتيجية لدبي: VARA أول جهة تنظيمية مستقلة مخصصة للأصول الافتراضية عالميًا، وفئة ARVA توفر أوضح مسار امتثال لـ RWA، وXRPL لديه حالات نجاح مثبتة (ترميز ألماس بقيمة 280 مليون دولار، ومشروع DLD العقاري).</p>
+
+                <h2>4. البنية التقنية</h2>
+                <h3>طبقة التسوية والأصول</h3>
+                <p>السلسلة الأساسية: XRP Ledger (XRPL) مع بورصة لامركزية مدمجة وأدوات حفظ وامتثال، ومعايير الرموز متوافقة مع متطلبات VARA ARVA.</p>
+                <h3>طبقة الامتثال والوصول</h3>
+                <p>الهوية اللامركزية (DID) + بيانات الاعتماد القابلة للتحقق (VC)، ومجمعات السيولة المصرح بها، والتقارير التنظيمية الآلية، وتكامل AML/KYC.</p>
+                <h3>طبقة التطبيق والواجهة</h3>
+                <p>سوق أصول RWA (تم إطلاق MVP)، ولوحة تحكم المستثمر، وبوابة إصدار الأصول، وواجهة API مفتوحة.</p>
+
+                <h2>5. الميزات (تم إنجاز MVP)</h2>
+                <p>الصفحة الرئيسية، سوق الأصول، تفاصيل الأصول، لوحة التحكم، مركز الحساب، الإعدادات، مركز الامتثال، الورقة البيضاء، سياسة الخصوصية، شروط الخدمة – 10 صفحات مع دعم لغتين والوضع الداكن.</p>
+
+                <h2>6. هيكل الامتثال والقانون</h2>
+                <p><strong>خريطة الامتثال من أربع خطوات:</strong></p>
+                <ul>
+                    <li>الخطوة الأولى: طلب خطاب عدم الممانعة (NOC) من VARA، نطاق العمل: استشارات وتطوير تقنيات دفاتر الحسابات الموزعة (تكلفة 3k-8k دولار)</li>
+                    <li>الخطوة الثانية: تشغيل خدمات DLT بموجب NOC، وبناء سجل تشغيلي (الأشهر 4-8)</li>
+                    <li>الخطوة الثالثة: تقديم طلب VARA الكامل (رأي قانوني من خمسة أجزاء، IDQ، دليل AML) – تكلفة 40k-80k دولار</li>
+                    <li>الخطوة الرابعة: الحصول على ترخيص VASP، وإطلاق إصدار RWA والتداول الثانوي (رسوم إشراف سنوية ~20k دولار)</li>
+                </ul>
+                <p><strong>هيكل الأصول (SPV):</strong> يتم الاحتفاظ بكل أصل مرمز عبر SPV ثلاثي المستويات في ولاية ديلاوير، مما يحقق العزل عن الإفلاس وفصل حقوق العائد المتوافقة.</p>
+                <p><strong>متطلبات VARA ARVA:</strong> رأي قانوني إلزامي من خمسة أجزاء، وإفصاح مخاطر مخصص، وورقة بيضاء مفتوحة بالكامل، والتحقق من ملاءمة المستثمر (KYC/AML + مستثمر معتمد)، وقفل لمدة 12 شهرًا.</p>
+
+                <h2>7. نموذج الاقتصاد الرمزي (MHT)</h2>
+                <p><strong>المعايير الأساسية:</strong> اسم الرمز MoHan Token (MHT)، إجمالي العرض 1,000,000,000 رمز (حد أقصى ثابت)، السلسلة الأساسية XRPL، رمز حوكمة + رمز التقاط القيمة.</p>
+                <p><strong>خطة التوزيع:</strong> حوافز النظام البيئي 40%، الفريق والمطورون 20% (قفل 3 سنوات)، خزينة المؤسسة 20%، الطرح الخاص/العام الاستراتيجي 15%، الإسقاط الجوي والمجتمع 5%.</p>
+                <p><strong>الوظائف الأساسية لـ MHT:</strong> حق الحوكمة، التقاط القيمة (إعادة الشراء والإتلاف أو توزيع أرباح التوقيع)، حوافز التوقيع، عتبة الامتثال.</p>
+
+                <h2>8. نموذج الأعمال ومصادر الإيرادات</h2>
+                <p>مصادر الإيرادات: رسوم خدمات DLT التقنية (3k-100k دولار/مشروع)، رسوم إصدار الأصول (1-3% من قيمة الإصدار)، رسوم إدارة سنوية (0.5-1% من الأصول المدارة)، رسوم تداول (0.1-0.3%)، رسوم البيانات وAPI (500-5k دولار/شهر).</p>
+                <p>التوقعات المالية للسنة الأولى: نفقات أول 8 أشهر ~50k-84k دولار، وفي الأشهر 9-12 تحتاج رسوم طلب VARA الكامل 40k-80k دولار يتم تغطيتها بالإيرادات الخدمية وتمويل أولي.</p>
+
+                <h2>9. خريطة الطريق</h2>
+                <ul>
+                    <li><strong>المرحلة 0 (الربع الثاني-الثالث 2026):</strong> تحضير التسجيل + بدء تطوير الأعمال + إتقان المنصة</li>
+                    <li><strong>المرحلة 1 (الربع الثالث 2026):</strong> تسجيل DMCC + الحصول على NOC من VARA + فتح حساب بنكي</li>
+                    <li><strong>المرحلة 2 (الربع الثالث-الرابع 2026):</strong> إيرادات خدمات DLT + بناء الشبكات (هدف 3 عملاء، إيرادات 15k+ دولار)</li>
+                    <li><strong>المرحلة 3 (الربع الرابع 2026-الربع الأول 2027):</strong> تقديم طلب VARA الكامل + الموافقة المبدئية</li>
+                    <li><strong>المرحلة 4 (الربع الأول-الثاني 2027):</strong> إطلاق الشبكة الرئيسية + تمويل أولي بقيمة 500k دولار + ترخيص VASP</li>
+                    <li><strong>المرحلة 5 (من الربع الثالث 2027 فصاعدًا):</strong> التوسع العالمي، تجاوز حجم التداول مليون دولار</li>
+                </ul>
+
+                <h2>10. الفريق</h2>
+                <p><strong>يانغ موهان (Yang Mohan) – المؤسس ومطور كامل المكدس:</strong> قام بشكل مستقل بتطوير 10 صفحات أمامية، وواجهة برمجة التطبيقات الخلفية والبنية التحتية، وأكمل MVP بالكامل في أسبوع واحد بمساعدة أدوات الذكاء الاصطناعي. سيقوم لاحقًا بتعيين مستشار قانوني/امتثال، وشريك لتطوير الأعمال، ومهندس بلوكشين، ومسؤول تسويق.</p>
+
+                <h2>11. عوامل الخطر</h2>
+                <p>المخاطر التنظيمية، مخاطر السوق، المخاطر التقنية، المخاطر التشغيلية، مخاطر الأصول، مخاطر السيولة، مخاطر المنافسة. راجع إفصاح المخاطر الخاص بالمنصة للحصول على إجراءات التخفيف.</p>
+                <div class="risk-note"><strong>⚠️ تنويه مهم</strong><br>هذه الورقة البيضاء للأغراض المعلوماتية فقط ولا تشكل نصيحة استثمارية. قد تتقلب قيمة الرمز وقد تخسر جزءًا أو كل استثمارك. يرجى قراءة إفصاح المخاطر الكامل قبل الاستثمار.</div>
+
+                <p style="margin-top: 40px; font-size: 0.8rem;">© 2026 منصة MoHan RWA | جميع الحقوق محفوظة.<br>للاتصال: yangmohan945@163.com | المكتب المسجل: منطقة DMCC الحرة، دبي، الإمارات العربية المتحدة (قيد التأسيس)</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p><span class="lang-zh">© 2026 MoHan RWA Platform. 保留所有权利。</span><span class="lang-en">© 2026 MoHan RWA Platform. All rights reserved.</span><span class="lang-ar">© 2026 منصة MoHan RWA. جميع الحقوق محفوظة.</span></p>
+        <div class="footer-links">
+            <a href="privacy-policy.html"><span class="lang-zh">隐私政策</span><span class="lang-en">Privacy Policy</span><span class="lang-ar">سياسة الخصوصية</span></a>
+            <a href="terms-of-service.html"><span class="lang-zh">服务条款</span><span class="lang-en">Terms of Service</span><span class="lang-ar">شروط الخدمة</span></a>
+            <a href="whitepaper.html"><span class="lang-zh">白皮书</span><span class="lang-en">Whitepaper</span><span class="lang-ar">الورقة البيضاء</span></a>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
